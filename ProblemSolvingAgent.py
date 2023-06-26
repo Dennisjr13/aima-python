@@ -1,21 +1,22 @@
 #!/usr/bin/env python3
 
-__author__ = "Dennis Juhasz"
+__author__ = "Kemari Evans, Stephen Jendritz, Alexander Gu, and Dennis Juhasz"
 __copyright__ = "Copyright 2023, Worcester Polytechnic Institute"
-__credits__ = ["Dennis Juhasz"]
+__credits__ = ["Kemari Evans", "Stephen Jendritz", "Alexander Gu", "Dennis Juhasz"]
 
 __license__ = "GPL"
 __version__ = "1.0.1"
 __maintainer__ = "Dennis Juhasz"
 __email__ = "drjuhasz@wpi.edu"
-__status__ = "Development"
+__status__ = "Production"
 
 import sys
 import random
 import numpy as np
 
-from search import GraphProblem, Node, exp_schedule, greedy_best_first_graph_search, astar_search
-from utils import argmin_random_tie, probability
+from search import GraphProblem, Node, exp_schedule, greedy_best_first_graph_search, astar_search, \
+    depth_first_graph_search, breadth_first_graph_search, UndirectedGraph
+from utils import argmin_random_tie, probability, distance
 
 
 class LocalGraphProblem(GraphProblem):
@@ -49,7 +50,7 @@ class LocalGraphProblem(GraphProblem):
                     [coordinates_1[0] - coordinates_2[0], coordinates_1[1] - coordinates_2[1]])
 
 
-class SimpleProblemSolvingAgent:
+class ProblemSolvingAgent:
     problem = {}
 
     def __init__(self, initial, goal, graph):
@@ -107,6 +108,18 @@ class SimpleProblemSolvingAgent:
     def solver(self):
         """ Runs the solvers """
 
+        # Depth-first search
+        result = depth_first_graph_search(
+            self.problem)
+        print("Depth First Search")
+        display(self.problem.initial, result)
+
+        # Breadth-first search
+        result = breadth_first_graph_search(
+            self.problem)
+        print("Breadth First Search")
+        display(self.problem.initial, result)
+
         # Greedy best-first search is best-first graph search with f(n) = h(n).
         result = greedy_best_first_graph_search(
             self.problem,
@@ -121,6 +134,13 @@ class SimpleProblemSolvingAgent:
         print("A* Search")
         display(self.problem.initial, result)
 
+        # TODO: implement D* search
+        #result = dstar_search(
+        #    self.problem,
+        #    self.problem.h)
+        print("D* Search")
+        #display(self.problem.initial, result)
+
         # Hill climbing search
         result = self.hill_climbing_search()
         print("Hill Climbing Search")
@@ -134,7 +154,41 @@ class SimpleProblemSolvingAgent:
 
 def display(initial, result):
     """ Displays an algorithm result to console """
-    print(initial + " → ", end='')
+    print(str(initial) + " → ", end='')
     print(*result.solution(), sep=" → ")
     print("Total Cost: %s" % result.path_cost)
     print()
+
+
+def CustomGraph(nodes=list(range(100)), min_links=4, width=400, height=300):
+    """Construct our custom graph, with the specified nodes, and random links.
+    The nodes are laid out randomly on a (width x height) rectangle.
+    Then each node is connected to the min_links nearest neighbors.
+    Because inverse links are added, some nodes will have more connections."""
+    g = UndirectedGraph()
+    g.locations = {}
+    # Build the nodes
+    x_coord = 0
+    y_coord = 0
+    for node in nodes:
+        g.locations[node] = (x_coord, y_coord)
+        x_coord += 1
+        if x_coord % 10 == 0:
+            y_coord += 1
+            x_coord = 0
+    # Build path from each node to at least min_links nearest neighbors.
+    for i in range(min_links):
+        for node in nodes:
+            if len(g.get(node)) < min_links:
+                here = g.locations[node]
+
+                def distance_to_node(n):
+                    if n is node or g.get(node, n):
+                        return np.inf
+                    return distance(g.locations[n], here)
+
+                neighbor = min(nodes, key=distance_to_node)
+                d = distance(g.locations[neighbor], here)
+                if d == 1.0:
+                    g.connect(node, neighbor, int(d))
+    return g
