@@ -12,13 +12,9 @@ Timer functionality added. SLAM added.
 
 
 def main():
-    parser = JSONParser("default")
+    parser = JSONParser("test")
 
-    # obstacles support coming soon
-    # obstacles = []
-    # for obstacle in parser.obstacles:
-    
-    obstacles = [pygame.Rect(50, 50, 100, 100), pygame.Rect(350, 50, 50, 50)]  # List of pygame.Rect
+    obstacles = list(map(lambda x: pygame.Rect(*x), parser.obstacles))
 
     goal = parser.goal  # Coordinates of the goal (what the agent is looking for).
     env = Environment(parser.screen_size, obstacles, goal)

@@ -13,14 +13,15 @@ class JSONParser:
             self.screen_size = tuple(data['screen_size'])
             self.agent_start = tuple(data['agent_start'])
             self.goal = tuple(data['goal'])
-            self.obstacles = [list(map(tuple, obstacle)) for obstacle in data['obstacles']]
+            self.obstacles = data['obstacles']
 
 
 def main():
     file_name = 'default'
     parser = JSONParser(file_name)
-    print(parser.screen_size)
+    print(parser.obstacles)
 
 
+# for debugging purposes
 if __name__ == '__main__':
     main()
