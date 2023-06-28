@@ -1,7 +1,8 @@
+import pygame
 from agent import Agent
 from environment import Environment
 from simulation import Simulation
-from obstacles import list_of_obstacles
+from level import JSONParser
 
 
 """
@@ -11,10 +12,17 @@ Timer functionality added. SLAM added.
 
 
 def main():
-    obstacles = list_of_obstacles
-    goal = (400, 400)  # Coordinates of the goal (what the agent is looking for).
-    env = Environment((500, 500), obstacles, goal)
-    agent = Agent(env, (250, 250))  # Starting at the center of the screen
+    parser = JSONParser("default")
+
+    # obstacles support coming soon
+    # obstacles = []
+    # for obstacle in parser.obstacles:
+    
+    obstacles = [pygame.Rect(50, 50, 100, 100), pygame.Rect(350, 50, 50, 50)]  # List of pygame.Rect
+
+    goal = parser.goal  # Coordinates of the goal (what the agent is looking for).
+    env = Environment(parser.screen_size, obstacles, goal)
+    agent = Agent(env, parser.agent_start)  # Starting at the center of the screen
     sim = Simulation(env, agent)
 
     sim.run()
