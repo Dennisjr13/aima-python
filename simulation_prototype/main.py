@@ -1,7 +1,7 @@
-import pygame
 from agent import Agent
 from environment import Environment
 from simulation import Simulation
+from obstacles import list_of_obstacles
 
 
 """
@@ -11,7 +11,7 @@ Timer functionality added. SLAM added.
 
 
 def main():
-    obstacles = [pygame.Rect(50, 50, 100, 100), pygame.Rect(350, 50, 50, 50)]  # List of pygame.Rect
+    obstacles = list_of_obstacles
     goal = (400, 400)  # Tuple
     env = Environment((500, 500), obstacles, goal)
     agent = Agent(env, (250, 250))  # Starting at the center of the screen

@@ -3,17 +3,21 @@ import pygame
 
 class Simulation:
     def __init__(self, env, agent, screen_size=(1000, 500)):
+        # boilerplate
         pygame.init()
         self.env = env
         self.agent = agent
         self.screen = pygame.display.set_mode(screen_size)
-        self.fps = 60
-
         self.surface = pygame.Surface(screen_size)  # Create a new surface
         self.view_color = pygame.Surface(screen_size, pygame.SRCALPHA)
         self.view_color.set_colorkey((0, 0, 0))
 
-        self.font = pygame.font.Font(None, 36)  # Create a font object
+        # configurable
+        self.fps = 60  # refresh rate of the simulation
+        font_size = 36  # size of text on screen
+        self.font = pygame.font.Font(None, font_size)  # boilerplate
+
+        # timer
         self.timer_start = None
         self.timer_end = None  # time when the agent finds the goal
 
@@ -52,10 +56,12 @@ class Simulation:
         self.screen.blit(text, (0, 25))
 
     def draw_collision_bounds(self):
+        """Draws the agent's hit box."""
         pygame.draw.circle(self.screen, (255, 0, 0), self.agent.rect.center, self.agent.collision_distance,
                            1)  # Draw a red circle with a thickness of 1 pixel
 
     def draw_map(self):
+        """Draws the SLAM on the right half of the window."""
         self.screen.blit(self.agent.map.surface, (500, 0))
 
     def run(self):
@@ -64,18 +70,18 @@ class Simulation:
         self.timer_start = pygame.time.get_ticks()
 
         while running:
-            self.screen.fill((211, 211, 211))
+            self.screen.fill((211, 211, 211))  # color of free space
 
+            # draws things
             self.agent.get_field_of_view()
             self.draw_field_of_view()
-
-            self.draw_collision_bounds()
+            self.draw_collision_bounds()  # hit box
 
             self.draw_agent()
             self.draw_target()
             self.draw_obstacles()
 
-            self.draw_map()
+            self.draw_map()  # SLAM
 
             # Stop the timer if the target is in the agent's field of view
             if self.timer_end is None and any(
@@ -84,6 +90,7 @@ class Simulation:
                 self.timer_end = pygame.time.get_ticks()
                 self.agent.goal_found = True
 
+            # Displays the timers.
             self.draw_timer()
             self.draw_collision_time()
 
@@ -93,6 +100,9 @@ class Simulation:
                 elif event.type == pygame.MOUSEBUTTONDOWN:  # Detect mouse click events
                     self.agent.move_to(event.pos)  # Move the agent to the clicked position
 
+            # currently doesn't work, but it was supposed to let
+            # the user move the agent with arrow keys
+            # (MAY NOT BE NEEDED, marked for deletion)
             keys = pygame.key.get_pressed()
             if keys[pygame.K_UP]:
                 self.agent.apply_force(pygame.Vector2(0, -0.1))
@@ -103,12 +113,14 @@ class Simulation:
             if keys[pygame.K_RIGHT]:
                 self.agent.apply_force(pygame.Vector2(0.1, 0))
 
+            # if the simulation is not over, the agent can move
             if not self.agent.goal_found:
-                self.agent.move()
+                self.agent.move()  # updates the state of the agent
 
             else:
                 self.agent.vel = 0
 
+            # update contents of the SLAM
             self.agent.map.update()
             self.agent.map.draw_agent()
             self.agent.map.draw_target()

@@ -3,14 +3,18 @@ import pygame
 
 class Map:
     def __init__(self, env, agent, screen_size=(500, 500)):
+        # boilerplate
         pygame.init()
         self.env = env
         self.agent = agent
         self.screen = pygame.display.set_mode(screen_size)
         self.surface = pygame.Surface(screen_size)
-        self.surface.fill((0, 0, 0))
+
+        # configurable
+        self.surface.fill((0, 0, 0))  # background color of the SLAM
 
     def update(self):
+        """Updates what is known about the immediate area around the agent."""
         for point in self.agent.visible_points:
             pygame.draw.line(self.surface, (255, 255, 255), self.agent.rect.center, point)
 
@@ -25,13 +29,16 @@ class Map:
             pygame.draw.circle(self.surface, (0, 255, 0), (int(self.env.goal[0]), int(self.env.goal[1])), 5)
 
     def draw_path(self):
+        """Draws a visual of where the agent has been."""
         for i in range(1, len(self.agent.path)):
             pygame.draw.line(self.surface, (0, 255, 0), self.agent.path[i - 1], self.agent.path[i])
 
     def draw_obstacle_highlights(self):
+        """Shows points that have been identified as part of an obstacle."""
         for point in self.agent.obstacle_points:
             pygame.draw.circle(self.surface, (255, 0, 0), point, 2)
 
     def draw(self):
+        """Displays the updated SLAM for the user to see."""
         self.screen.blit(self.surface, (0, 0))
         pygame.display.flip()

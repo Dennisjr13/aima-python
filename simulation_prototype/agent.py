@@ -4,36 +4,42 @@ from simulation_map import Map
 
 class Agent:
     def __init__(self, env, pos=(0, 0), size=5):
+        # boilerplate
         self.env = env
-        self.pos = pos
-        self.size = size
         self.rect = pygame.Rect(*pos, size, size)
-
-        self.goal_found = False
-
-        self.target_location = None
-        self.total_collision_time = 0
-        self.collision_distance = self.size*2
-
+        self.surface = pygame.Surface(env.size)
+        self.map = Map(env, self, env.size)
         self.vel = pygame.Vector2(0, 0)  # initialize velocity
         self.acc = pygame.Vector2(0, 0)  # initialize acceleration
+
+        # needed for moveTo
+        self.target_location = None
+
+        # configurable settings for the agent
         self.max_speed = 10  # max speed to prevent the agent from going too fast
         self.acceleration_coefficient = 0.1
-        self.friction = 0.5  # Friction factor
+        self.friction = 0.5  # Friction factor (between 0 and 1)
 
         self.view_distance = 75  # Distance the agent can see
         self.view_resolution = 720  # Number of rays to cast within field of view
-        self.visible_points = []
 
-        self.surface = pygame.Surface(env.size)
-        self.path = [pos]
-        self.obstacle_points = []
-        self.map = Map(env, self, env.size)
+        self.pos = pos  # position of the agent
+        self.size = size  # size of the agent body
+        self.collision_distance = self.size * 2  # the agent's hit box
+
+        # knowledge base
+        self.visible_points = []  # keeps track of what the agent has seen
+        self.path = [pos]  # keeps track of where the agent has been
+        self.obstacle_points = []  # keeps track of the edges of obstacles encountered
+        self.total_collision_time = 0
+        self.goal_found = False
 
     def apply_force(self, force):
+        """Helper method, accelerates the agent."""
         self.acc += force
 
     def move(self):
+        """Decides how the agent should move."""
         if self.target_location is not None:
             # Calculate the direction vector to the target location
             direction = self.target_location - pygame.Vector2(self.rect.center)
@@ -68,10 +74,14 @@ class Agent:
         self.path.append(self.rect.center)
 
     def move_to(self, target_location):
+        """Tells the agent that it should move
+        towards the given coordinates."""
         self.target_location = pygame.Vector2(target_location)  # Set the target position
 
     def near_obstacle(self):
-
+        """Returns true if the agent is colliding with an obstacle; i.e.,
+        if an obstacle is touching the agent's hit box (indicated by the red circle).
+        False otherwise."""
         if self.goal_found:
             return
 
@@ -88,6 +98,10 @@ class Agent:
         return False
 
     def valid_pos(self, new_rect):
+        """Returns false if moving the agent would make it phase into
+        an obstacle or past the edge of the available area.
+        Returns true otherwise (if the agent can continue moving in
+        the direction it's heading towards)."""
         # Check boundaries
         if new_rect.left < 0 or new_rect.top < 0 or \
                 new_rect.right > self.env.size[0] or new_rect.bottom > self.env.size[1]:
@@ -101,6 +115,7 @@ class Agent:
         return True
 
     def get_field_of_view(self):
+        """Computes what the agent can see."""
         visible_points = []
         for i in range(self.view_resolution):
             # Angle of the ray
