@@ -2,12 +2,13 @@ import pygame
 
 
 class Simulation:
-    def __init__(self, env, agent, screen_size=(1000, 500)):
+    def __init__(self, env, agent, screen_size):
         # boilerplate
         pygame.init()
         self.env = env
         self.agent = agent
-        self.screen = pygame.display.set_mode(screen_size)
+        self.screen_size = screen_size
+        self.screen = pygame.display.set_mode((2*screen_size[0], screen_size[1]))
         self.surface = pygame.Surface(screen_size)  # Create a new surface
         self.view_color = pygame.Surface(screen_size, pygame.SRCALPHA)
         self.view_color.set_colorkey((0, 0, 0))
@@ -98,7 +99,8 @@ class Simulation:
                 if event.type == pygame.QUIT:
                     running = False
                 elif event.type == pygame.MOUSEBUTTONDOWN:  # Detect mouse click events
-                    self.agent.move_to(event.pos)  # Move the agent to the clicked position
+                    if pygame.mouse.get_pos()[0] <= self.screen_size[0]:
+                        self.agent.move_to(event.pos)  # Move the agent to the clicked position
 
             # currently doesn't work, but it was supposed to let
             # the user move the agent with arrow keys

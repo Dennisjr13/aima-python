@@ -9,8 +9,8 @@ class Agent:
         self.rect = pygame.Rect(*pos, size, size)
         self.surface = pygame.Surface(env.size)
         self.map = Map(env, self, env.size)
-        self.vel = pygame.Vector2(0, 0)  # initialize velocity
-        self.acc = pygame.Vector2(0, 0)  # initialize acceleration
+        self.vel = pygame.Vector2(0, 0)
+        self.acc = pygame.Vector2(0, 0)
 
         # needed for moveTo
         self.target_location = None
@@ -18,10 +18,10 @@ class Agent:
         # configurable settings for the agent
         self.max_speed = 10  # max speed to prevent the agent from going too fast
         self.acceleration_coefficient = 0.1
-        self.friction = 0.5  # Friction factor (between 0 and 1)
+        self.friction = 0.5  # friction factor (between 0 and 1)
 
-        self.view_distance = 75  # Distance the agent can see
-        self.view_resolution = 720  # Number of rays to cast within field of view
+        self.view_distance = 75  # distance the agent can see
+        self.view_resolution = 720  # number of rays to cast within field of view
 
         self.pos = pos  # position of the agent
         self.size = size  # size of the agent body

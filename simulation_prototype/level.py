@@ -15,6 +15,13 @@ class JSONParser:
             self.goal = tuple(data['goal'])
             self.obstacles = data['obstacles']
 
+            # Obstacles for the edge of the simulated space.
+            edge_width = 5  # edge border width
+            self.obstacles.append([-edge_width, 0, edge_width, self.screen_size[0]])
+            self.obstacles.append([0, -edge_width, self.screen_size[1], edge_width])
+            self.obstacles.append([self.screen_size[0], 0, edge_width, self.screen_size[1]])
+            self.obstacles.append([0, self.screen_size[1], self.screen_size[0], edge_width])
+
 
 def main():
     file_name = 'new_level'

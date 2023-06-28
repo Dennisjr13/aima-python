@@ -19,7 +19,7 @@ def main():
     goal = parser.goal  # Coordinates of the goal (what the agent is looking for).
     env = Environment(parser.screen_size, obstacles, goal)
     agent = Agent(env, parser.agent_start)  # Starting at the center of the screen
-    sim = Simulation(env, agent)
+    sim = Simulation(env, agent, parser.screen_size)
 
     sim.run()
 
