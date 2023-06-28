@@ -12,7 +12,7 @@ Timer functionality added. SLAM added.
 
 
 def main():
-    parser = JSONParser("test")
+    parser = JSONParser("new_level")
 
     obstacles = list(map(lambda x: pygame.Rect(*x), parser.obstacles))
 

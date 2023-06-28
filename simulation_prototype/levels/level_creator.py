@@ -103,7 +103,7 @@ def write_file(obstacle_creator):
             'screen_size': obstacle_creator.screen_size,
             'agent_start': obstacle_creator.agent_start,
             'goal': obstacle_creator.goal,
-            'obstacles': obstacle_creator.obstacles
+            'obstacles': rectangle_coordinates
         }, file)
 
 

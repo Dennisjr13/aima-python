@@ -1,0 +1,2 @@
+- create obstacles around levels by default
+- do not trigger the agent moving when clicking on SLAM

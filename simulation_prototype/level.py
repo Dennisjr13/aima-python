@@ -17,7 +17,7 @@ class JSONParser:
 
 
 def main():
-    file_name = 'default'
+    file_name = 'new_level'
     parser = JSONParser(file_name)
     print(parser.obstacles)
 
