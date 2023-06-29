@@ -8,7 +8,6 @@ class Simulation:
         pygame.init()
         self.env = env
         self.agent = agent
-        self.map = self.agent.map
 
         self.screen_size = self.env.size
         self.window_size = (2*self.screen_size[0], self.screen_size[1])
@@ -75,11 +74,7 @@ class Simulation:
 
     def draw_map(self):
         """Draws the SLAM on the right half of the window."""
-        self.map.draw_explored()
-        self.agent.map.draw_agent()
-        self.agent.map.draw_goal()
-        self.agent.map.draw_path()
-        self.agent.map.draw_obstacle_highlights()
+        self.agent.map.draw()
         self.screen.blit(self.agent.map.surface, (self.screen_size[0], 0))
 
     def draw_everything(self):
@@ -90,6 +85,8 @@ class Simulation:
         self.draw_agent()
         self.draw_goal()
         self.draw_obstacles()
+        self.draw_timer()
+        self.draw_collision_time()
 
         self.draw_map()
 
@@ -111,21 +108,17 @@ class Simulation:
                 self.timer_end = pygame.time.get_ticks()
                 self.agent.goal_found = True
 
-            # Displays the timers.
-            self.draw_timer()
-            self.draw_collision_time()
-
+            # mouseclick events
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    running = False
-                elif event.type == pygame.MOUSEBUTTONDOWN:  # Detect mouse click events
+                    running = False  # closes the simulation window
+                elif event.type == pygame.MOUSEBUTTONDOWN:
                     if pygame.mouse.get_pos()[0] <= self.screen_size[0]:
-                        self.agent.move_to(event.pos)  # Move the agent to the clicked position
+                        self.agent.move_to(event.pos)  # move agent towards mouse
 
-            # if the simulation is not over, the agent can move
+            # the agent can't move when the goal is found
             if not self.agent.goal_found:
-                self.agent.move()  # updates the state of the agent
-
+                self.agent.move()
             else:
                 self.agent.vel = 0
 

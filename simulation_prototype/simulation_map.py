@@ -5,7 +5,6 @@ from utils import create_surface
 class Map:
     def __init__(self, env, agent):
         # boilerplate
-        pygame.init()
         self.env = env
         self.agent = agent
 
@@ -43,5 +42,8 @@ class Map:
 
     def draw(self):
         """Displays the updated SLAM for the user to see."""
-        self.screen.blit(self.surface, (0, 0))
-        pygame.display.flip()
+        self.draw_explored()
+        self.draw_agent()
+        self.draw_goal()
+        self.draw_path()
+        self.draw_obstacle_highlights()
