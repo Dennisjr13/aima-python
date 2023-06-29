@@ -1,5 +1,4 @@
 import pygame
-from utils import create_surface
 
 
 class Map:
