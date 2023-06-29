@@ -1,4 +1,6 @@
 import pygame
+
+from search import UndirectedGraph
 from utils import create_surface
 
 
@@ -90,6 +92,17 @@ class Simulation:
 
         self.draw_map()
 
+    def points_to_graph(self):
+        """ Create a new UndirectedGraph from the visible points on the map """
+        g = UndirectedGraph()
+        g.locations = {}
+        for idx, point in enumerate(self.agent.visible_points):
+            g.locations[idx] = (point.x, point.y)
+
+        # TODO: make real connections
+        g.connect(0, 1, 1)
+        return g
+
     def run(self):
         running = True
         clock = pygame.time.Clock()
@@ -127,5 +140,10 @@ class Simulation:
 
             # Update the display
             pygame.display.flip()
+
+            # Creates a valid graph for ProblemSolvingAgent
+            #graph = self.points_to_graph()
+
+            # TODO: use an algorithm to determine next move
 
         pygame.quit()
