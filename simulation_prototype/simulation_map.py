@@ -26,7 +26,7 @@ class Map:
                             int(self.agent.rect.centery)),
                            self.agent.size)
 
-    def draw_target(self):
+    def draw_goal(self):
         if self.agent.goal_found:
             pygame.draw.circle(self.surface, (0, 255, 0), (int(self.env.goal[0]), int(self.env.goal[1])), 5)
 

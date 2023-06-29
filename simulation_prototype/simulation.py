@@ -1,4 +1,5 @@
 import pygame
+from utils import create_surface
 
 
 class Simulation:
@@ -12,8 +13,13 @@ class Simulation:
         self.window_size = (2*self.screen_size[0], self.screen_size[1])
         self.screen = pygame.display.set_mode(self.window_size)
         self.surface = pygame.Surface(self.screen_size)  # Create a new surface
-        self.view_color = pygame.Surface(self.screen_size, pygame.SRCALPHA)
-        self.view_color.set_colorkey((0, 0, 0))
+
+        # increase computational efficiency
+        self.agent_surface = create_surface(self.screen_size)
+        self.goal_surface = create_surface(self.screen_size)
+        self.obstacle_surface = create_surface(self.screen_size)
+        self.fov_surface = create_surface(self.screen_size)
+        self.hitbox_surface = create_surface(self.screen_size)
 
         # configurable
         self.fps = 60  # refresh rate of the simulation
@@ -25,26 +31,28 @@ class Simulation:
         self.timer_end = None  # time when the agent finds the goal
 
     def draw_agent(self):
-        pygame.draw.circle(self.screen, (0, 0, 255),
-                           (int(self.agent.rect.centerx),
-                            int(self.agent.rect.centery)),
-                           self.agent.size)
+        self.agent_surface.fill((0, 0, 0, 0))
+        pygame.draw.circle(self.agent_surface, (0, 0, 255),
+                           self.agent.rect.center, self.agent.size)
+        self.screen.blit(self.agent_surface, (0, 0))
 
-    def draw_target(self):
-        pygame.draw.circle(self.screen, (0, 255, 0), (int(self.env.goal[0]), int(self.env.goal[1])), 5)
+    def draw_goal(self):
+        self.goal_surface.fill((0, 0, 0, 0))
+        pygame.draw.circle(self.goal_surface, (0, 255, 0), self.env.goal, 5)
+        self.screen.blit(self.goal_surface, (0, 0))
 
     def draw_obstacles(self):
+        self.obstacle_surface.fill((0, 0, 0, 0))
         for obstacle in self.env.obstacles:
-            pygame.draw.rect(self.screen, (169, 169, 169), obstacle)
+            pygame.draw.rect(self.obstacle_surface, (169, 169, 169), obstacle)
+        self.screen.blit(self.obstacle_surface, (0, 0))
 
     def draw_field_of_view(self):
-        # Fill the field of view surface with transparent color
-        self.view_color.fill((0, 0, 0))
+        self.fov_surface.fill((0, 0, 0, 0))
         if len(self.agent.visible_points) > 2:
             # Draw the field of view as a polygon with transparency
-            pygame.draw.polygon(self.view_color, pygame.Color(255, 255, 255, 100), self.agent.visible_points)
-        # Blit the field of view surface onto the screen
-        self.screen.blit(self.view_color, (0, 0))
+            pygame.draw.polygon(self.fov_surface, pygame.Color(255, 255, 255, 100), self.agent.visible_points)
+        self.screen.blit(self.fov_surface, (0, 0))
 
     def draw_timer(self):
         if self.timer_start is not None:
@@ -58,10 +66,11 @@ class Simulation:
         text = self.font.render(f'Collision Time: {self.agent.total_collision_time / 60:.2f}s', True, (0, 0, 0))
         self.screen.blit(text, (0, 25))
 
-    def draw_collision_bounds(self):
-        """Draws the agent's hit box."""
+    def draw_hit_box(self):
+        self.hitbox_surface.fill((0, 0, 0, 0))
         pygame.draw.circle(self.screen, (255, 0, 0), self.agent.rect.center, self.agent.collision_distance,
                            1)  # Draw a red circle with a thickness of 1 pixel
+        self.screen.blit(self.hitbox_surface, (0, 0))
 
     def draw_map(self):
         """Draws the SLAM on the right half of the window."""
@@ -78,15 +87,15 @@ class Simulation:
             # draws things
             self.agent.get_field_of_view()
             self.draw_field_of_view()
-            self.draw_collision_bounds()  # hit box
+            self.draw_hit_box()
 
             self.draw_agent()
-            self.draw_target()
+            self.draw_goal()
             self.draw_obstacles()
 
             self.draw_map()  # SLAM
 
-            # Stop the timer if the target is in the agent's field of view
+            # Stop the timer if the goal is in the agent's field of view
             if self.timer_end is None and any(
                     pygame.Vector2(self.env.goal).distance_squared_to(point) <= self.agent.size ** 2 for point in
                     self.agent.visible_points):
@@ -114,7 +123,7 @@ class Simulation:
             # update contents of the SLAM
             self.agent.map.update()
             self.agent.map.draw_agent()
-            self.agent.map.draw_target()
+            self.agent.map.draw_goal()
             self.agent.map.draw_path()
             self.agent.map.draw_obstacle_highlights()
 
