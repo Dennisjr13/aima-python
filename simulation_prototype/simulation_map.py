@@ -1,4 +1,5 @@
 import pygame
+from utils import create_surface
 
 
 class Map:
@@ -15,8 +16,8 @@ class Map:
         # configurable
         self.surface.fill((0, 0, 0))  # background color of the SLAM
 
-    def update(self):
-        """Updates what is known about the immediate area around the agent."""
+    def draw_explored(self):
+        # self.explored_surface.fill((0, 0, 0, 0))
         for point in self.agent.visible_points:
             pygame.draw.line(self.surface, (255, 255, 255), self.agent.rect.center, point)
 

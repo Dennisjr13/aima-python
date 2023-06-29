@@ -8,18 +8,19 @@ class Simulation:
         pygame.init()
         self.env = env
         self.agent = agent
+        self.map = self.agent.map
 
         self.screen_size = self.env.size
         self.window_size = (2*self.screen_size[0], self.screen_size[1])
+
         self.screen = pygame.display.set_mode(self.window_size)
-        self.surface = pygame.Surface(self.screen_size)  # Create a new surface
 
         # increase computational efficiency
         self.agent_surface = create_surface(self.screen_size)
         self.goal_surface = create_surface(self.screen_size)
         self.obstacle_surface = create_surface(self.screen_size)
         self.fov_surface = create_surface(self.screen_size)
-        self.hitbox_surface = create_surface(self.screen_size)
+        self.hit_box_surface = create_surface(self.screen_size)
 
         # configurable
         self.fps = 60  # refresh rate of the simulation
@@ -67,14 +68,30 @@ class Simulation:
         self.screen.blit(text, (0, 25))
 
     def draw_hit_box(self):
-        self.hitbox_surface.fill((0, 0, 0, 0))
+        self.hit_box_surface.fill((0, 0, 0, 0))
         pygame.draw.circle(self.screen, (255, 0, 0), self.agent.rect.center, self.agent.collision_distance,
                            1)  # Draw a red circle with a thickness of 1 pixel
-        self.screen.blit(self.hitbox_surface, (0, 0))
+        self.screen.blit(self.hit_box_surface, (0, 0))
 
     def draw_map(self):
         """Draws the SLAM on the right half of the window."""
+        self.map.draw_explored()
+        self.agent.map.draw_agent()
+        self.agent.map.draw_goal()
+        self.agent.map.draw_path()
+        self.agent.map.draw_obstacle_highlights()
         self.screen.blit(self.agent.map.surface, (self.screen_size[0], 0))
+
+    def draw_everything(self):
+        self.agent.get_field_of_view()
+        self.draw_field_of_view()
+        self.draw_hit_box()
+
+        self.draw_agent()
+        self.draw_goal()
+        self.draw_obstacles()
+
+        self.draw_map()
 
     def run(self):
         running = True
@@ -85,15 +102,7 @@ class Simulation:
             self.screen.fill((211, 211, 211))  # color of free space
 
             # draws things
-            self.agent.get_field_of_view()
-            self.draw_field_of_view()
-            self.draw_hit_box()
-
-            self.draw_agent()
-            self.draw_goal()
-            self.draw_obstacles()
-
-            self.draw_map()  # SLAM
+            self.draw_everything()
 
             # Stop the timer if the goal is in the agent's field of view
             if self.timer_end is None and any(
@@ -119,13 +128,6 @@ class Simulation:
 
             else:
                 self.agent.vel = 0
-
-            # update contents of the SLAM
-            self.agent.map.update()
-            self.agent.map.draw_agent()
-            self.agent.map.draw_goal()
-            self.agent.map.draw_path()
-            self.agent.map.draw_obstacle_highlights()
 
             # Limit the frame rate (frames per second)
             clock.tick(self.fps)
