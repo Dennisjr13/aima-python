@@ -2,15 +2,17 @@ import pygame
 
 
 class Simulation:
-    def __init__(self, env, agent, screen_size):
+    def __init__(self, env, agent):
         # boilerplate
         pygame.init()
         self.env = env
         self.agent = agent
-        self.screen_size = screen_size
-        self.screen = pygame.display.set_mode((2*screen_size[0], screen_size[1]))
-        self.surface = pygame.Surface(screen_size)  # Create a new surface
-        self.view_color = pygame.Surface(screen_size, pygame.SRCALPHA)
+
+        self.screen_size = self.env.size
+        self.window_size = (2*self.screen_size[0], self.screen_size[1])
+        self.screen = pygame.display.set_mode(self.window_size)
+        self.surface = pygame.Surface(self.screen_size)  # Create a new surface
+        self.view_color = pygame.Surface(self.screen_size, pygame.SRCALPHA)
         self.view_color.set_colorkey((0, 0, 0))
 
         # configurable
@@ -63,7 +65,7 @@ class Simulation:
 
     def draw_map(self):
         """Draws the SLAM on the right half of the window."""
-        self.screen.blit(self.agent.map.surface, (500, 0))
+        self.screen.blit(self.agent.map.surface, (self.screen_size[0], 0))
 
     def run(self):
         running = True
@@ -101,19 +103,6 @@ class Simulation:
                 elif event.type == pygame.MOUSEBUTTONDOWN:  # Detect mouse click events
                     if pygame.mouse.get_pos()[0] <= self.screen_size[0]:
                         self.agent.move_to(event.pos)  # Move the agent to the clicked position
-
-            # currently doesn't work, but it was supposed to let
-            # the user move the agent with arrow keys
-            # (MAY NOT BE NEEDED, marked for deletion)
-            keys = pygame.key.get_pressed()
-            if keys[pygame.K_UP]:
-                self.agent.apply_force(pygame.Vector2(0, -0.1))
-            if keys[pygame.K_DOWN]:
-                self.agent.apply_force(pygame.Vector2(0, 0.1))
-            if keys[pygame.K_LEFT]:
-                self.agent.apply_force(pygame.Vector2(-0.1, 0))
-            if keys[pygame.K_RIGHT]:
-                self.agent.apply_force(pygame.Vector2(0.1, 0))
 
             # if the simulation is not over, the agent can move
             if not self.agent.goal_found:

@@ -8,7 +8,7 @@ class Agent:
         self.env = env
         self.rect = pygame.Rect(*pos, size, size)
         self.surface = pygame.Surface(env.size)
-        self.map = Map(env, self, env.size)
+        self.map = Map(env, self)
         self.vel = pygame.Vector2(0, 0)
         self.acc = pygame.Vector2(0, 0)
 

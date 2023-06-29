@@ -2,13 +2,15 @@ import pygame
 
 
 class Map:
-    def __init__(self, env, agent, screen_size=(500, 500)):
+    def __init__(self, env, agent):
         # boilerplate
         pygame.init()
         self.env = env
         self.agent = agent
-        self.screen = pygame.display.set_mode(screen_size)
-        self.surface = pygame.Surface(screen_size)
+
+        self.screen_size = env.size
+        self.screen = pygame.display.set_mode(self.screen_size)
+        self.surface = pygame.Surface(self.screen_size)
 
         # configurable
         self.surface.fill((0, 0, 0))  # background color of the SLAM
