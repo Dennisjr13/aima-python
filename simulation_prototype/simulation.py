@@ -150,7 +150,7 @@ class Simulation:
             pygame.display.flip()
 
             # Creates a valid graph for ProblemSolvingAgent
-            #graph = self.points_to_graph()
+            graph = self.points_to_graph()
 
             # TODO: use an algorithm to determine next move
 
