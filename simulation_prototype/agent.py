@@ -13,7 +13,8 @@ class Agent:
         self.acc = pygame.Vector2(0, 0)
 
         # needed for moveTo
-        self.target_location = None
+        self.current_action = None
+        self.action_queue = []
 
         # configurable settings for the agent
         self.max_speed = 10  # max speed to prevent the agent from going too fast
@@ -40,9 +41,13 @@ class Agent:
 
     def move(self):
         """Decides how the agent should move."""
-        if self.target_location is not None:
+
+        if self.current_action is None:
+            if self.action_queue:
+                self.current_action = self.action_queue.pop(0)
+        else:
             # Calculate the direction vector to the target location
-            direction = self.target_location - pygame.Vector2(self.rect.center)
+            direction = self.current_action - pygame.Vector2(self.rect.center)
             distance = direction.length()
             # Normalize the direction vector and scale it to the desired force
             force = direction
@@ -52,8 +57,8 @@ class Agent:
             force = direction * distance * self.acceleration_coefficient
             self.apply_force(force)
             # If the agent is close to the target location, stop moving
-            if direction.length() < 50 and self.vel.length() == 0:
-                self.target_location = None
+            if direction.length() < 50 and self.vel.length() <= 0.5:
+                self.current_action = None
 
         self.vel += self.acc
         if self.vel.length() > self.max_speed:  # if velocity exceeds max_speed
@@ -73,10 +78,10 @@ class Agent:
 
         self.path.append(self.rect.center)
 
-    def move_to(self, target_location):
+    def move_to(self, new_action):
         """Tells the agent that it should move
         towards the given coordinates."""
-        self.target_location = pygame.Vector2(target_location)  # Set the target position
+        self.action_queue.append(pygame.Vector2(new_action))  # Set the target position
 
     def near_obstacle(self):
         """Returns true if the agent is colliding with an obstacle; i.e.,
