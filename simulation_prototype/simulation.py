@@ -127,7 +127,7 @@ class Simulation:
                     running = False  # closes the simulation window
                 elif event.type == pygame.MOUSEBUTTONDOWN:
                     if pygame.mouse.get_pos()[0] <= self.screen_size[0]:
-                        self.agent.move_to(event.pos)  # move agent towards mouse
+                        self.agent.queue_action(event.pos)  # move agent towards mouse
 
             # the agent can't move when the goal is found
             if not self.agent.goal_found:

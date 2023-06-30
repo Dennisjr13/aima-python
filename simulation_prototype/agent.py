@@ -35,9 +35,45 @@ class Agent:
         self.total_collision_time = 0
         self.goal_found = False
 
-    def apply_force(self, force):
-        """Helper method, accelerates the agent."""
-        self.acc += force
+    def queue_action(self, new_action):
+        """Tells the agent that it should move
+        towards the given coordinates.
+
+        Note: it's on the agent to not queue an action
+        for a coordinate in an obstacle."""
+        self.action_queue.append(pygame.Vector2(new_action))  # Set the target position
+
+    def get_field_of_view(self):
+        """Computes what the agent can see."""
+        visible_points = []
+        for i in range(self.view_resolution):
+            # Angle of the ray
+            angle = (360 * i / self.view_resolution)
+            # Create a unit vector in the direction of the ray
+            direction = pygame.Vector2(1, 0).rotate(-angle)
+            # Scale the vector to the view distance
+            ray = direction * self.view_distance
+            # Position of the end of the ray
+            end_pos = pygame.Vector2(self.rect.center) + ray
+            # Check if the ray hits any obstacles
+            closest_intersection_point = None
+            closest_distance = float('inf')
+            for obstacle in self.env.obstacles:
+                # Calculate the intersection of the line with the obstacle
+                intersection_points = obstacle.clipline(self.rect.center, end_pos)
+                for point in intersection_points:
+                    # Calculate the distance from the agent to the intersection point
+                    distance = (pygame.Vector2(point) - pygame.Vector2(self.rect.center)).length()
+                    if distance < closest_distance:
+                        closest_distance = distance
+                        closest_intersection_point = point
+            if closest_intersection_point is not None:
+                end_pos = pygame.Vector2(closest_intersection_point)
+                self.obstacle_points.append(end_pos)
+            # Store the end position of the ray
+            visible_points.append(end_pos)
+        # Store the points in the agent's field of view
+        self.visible_points = visible_points
 
     def move(self):
         """Decides how the agent should move."""
@@ -51,13 +87,12 @@ class Agent:
             distance = direction.length()
             # Normalize the direction vector and scale it to the desired force
             force = direction
-            if direction.length() != 0:
-                # normalize can't be given vectors of length 0
+            if distance != 0:  # vectors of length can't be normalized
                 force = force.normalize()
             force = direction * distance * self.acceleration_coefficient
             self.apply_force(force)
             # If the agent is close to the target location, stop moving
-            if direction.length() < 50 and self.vel.length() <= 0.5:
+            if distance < 50 and self.vel.length() <= 0.5:
                 self.current_action = None
 
         self.vel += self.acc
@@ -73,15 +108,14 @@ class Agent:
             self.vel -= direction * self.friction  # Apply friction in the direction of movement
         self.acc *= 0
 
-        if self.near_obstacle():  # safe distance around agent
+        if self.near_obstacle():
             self.total_collision_time += 1
 
         self.path.append(self.rect.center)
 
-    def move_to(self, new_action):
-        """Tells the agent that it should move
-        towards the given coordinates."""
-        self.action_queue.append(pygame.Vector2(new_action))  # Set the target position
+    def apply_force(self, force):
+        """Helper method, accelerates the agent."""
+        self.acc += force
 
     def near_obstacle(self):
         """Returns true if the agent is colliding with an obstacle; i.e.,
@@ -118,35 +152,3 @@ class Agent:
                 return False
 
         return True
-
-    def get_field_of_view(self):
-        """Computes what the agent can see."""
-        visible_points = []
-        for i in range(self.view_resolution):
-            # Angle of the ray
-            angle = (360 * i / self.view_resolution)
-            # Create a unit vector in the direction of the ray
-            direction = pygame.Vector2(1, 0).rotate(-angle)
-            # Scale the vector to the view distance
-            ray = direction * self.view_distance
-            # Position of the end of the ray
-            end_pos = pygame.Vector2(self.rect.center) + ray
-            # Check if the ray hits any obstacles
-            closest_intersection_point = None
-            closest_distance = float('inf')
-            for obstacle in self.env.obstacles:
-                # Calculate the intersection of the line with the obstacle
-                intersection_points = obstacle.clipline(self.rect.center, end_pos)
-                for point in intersection_points:
-                    # Calculate the distance from the agent to the intersection point
-                    distance = (pygame.Vector2(point) - pygame.Vector2(self.rect.center)).length()
-                    if distance < closest_distance:
-                        closest_distance = distance
-                        closest_intersection_point = point
-            if closest_intersection_point is not None:
-                end_pos = pygame.Vector2(closest_intersection_point)
-                self.obstacle_points.append(end_pos)
-            # Store the end position of the ray
-            visible_points.append(end_pos)
-        # Store the points in the agent's field of view
-        self.visible_points = visible_points
