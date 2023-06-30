@@ -1,8 +1,0 @@
-- make simulation more computationally/time efficient
-    - it's already memory-efficient, maybe we can sacrifice
-      some of that so that the simulation doesn't lag as much
-    - separate components into surfaces, which are later blitted together
-- encapsulate updating the SLAM map
-    - move all draw methods of the SLAM map into the Map Class definition
-        (and out of the Simulation class definition)
-- keep the code DRY (reparameterize the screen_size components)
