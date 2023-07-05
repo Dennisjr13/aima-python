@@ -1,6 +1,7 @@
 import pygame
 
 from search import UndirectedGraph
+from grid_map import GridMap
 from utils import create_surface
 
 
@@ -9,11 +10,12 @@ class Simulation:
         # boilerplate
         pygame.init()
         self.env = env
-        self.agent = agent
 
         self.screen_size = self.env.size
         self.window_size = (2*self.screen_size[0], self.screen_size[1])
 
+        self.agent = agent
+        self.grid = GridMap(self.screen_size)
         self.screen = pygame.display.set_mode(self.window_size)
 
         # increase computational efficiency
@@ -74,10 +76,19 @@ class Simulation:
                            1)  # Draw a red circle with a thickness of 1 pixel
         self.screen.blit(self.hit_box_surface, (0, 0))
 
-    def draw_map(self):
+    def draw_map(self, x='a', y='a'):
         """Draws the SLAM on the right half of the window."""
         self.agent.map.draw()
-        self.screen.blit(self.agent.map.surface, (self.screen_size[0], 0))
+        if x == 'a':
+            x = self.screen_size[0]
+        if y == 'a':
+            y = 0
+        self.screen.blit(self.agent.map.surface, (x, y))
+
+    def draw_grid(self, x='a', y='a'):
+        """Draws the discrete version of the map.
+        This is used for graph search."""
+        pass
 
     def draw_everything(self):
         self.agent.get_field_of_view()
@@ -126,7 +137,9 @@ class Simulation:
                 if event.type == pygame.QUIT:
                     running = False  # closes the simulation window
                 elif event.type == pygame.MOUSEBUTTONDOWN:
-                    if pygame.mouse.get_pos()[0] <= self.screen_size[0]:
+                    within_x_bound = pygame.mouse.get_pos()[0] <= self.screen_size[0]
+                    within_y_bound = pygame.mouse.get_pos()[1] <= self.screen_size[1]
+                    if within_x_bound and within_y_bound:
                         self.agent.queue_action(event.pos)  # move agent towards mouse
 
             # the agent can't move when the goal is found
@@ -142,7 +155,7 @@ class Simulation:
             pygame.display.flip()
 
             # Creates a valid graph for ProblemSolvingAgent
-            #graph = self.points_to_graph()
+            # graph = self.points_to_graph()
 
             # TODO: use an algorithm to determine next move
 

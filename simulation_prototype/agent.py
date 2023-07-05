@@ -29,7 +29,7 @@ class Agent:
         self.collision_distance = self.size * 2  # the agent's hit box
 
         # knowledge base
-        self.visible_points = []  # keeps track of what the agent has seen
+        self.visible_points = []  # shows what the agent currently sees
         self.path = [pos]  # keeps track of where the agent has been
         self.obstacle_points = []  # keeps track of the edges of obstacles encountered
         self.total_collision_time = 0
