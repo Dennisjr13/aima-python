@@ -18,11 +18,13 @@ class Agent:
 
         # configurable settings for the agent
         self.max_speed = 10  # max speed to prevent the agent from going too fast
-        self.acceleration_coefficient = 0.1
-        self.friction = 0.5  # friction factor (between 0 and 1)
+        self.acceleration_coefficient = 2
+        self.friction = 0.4  # friction factor (between 0 and 1)
 
         self.view_distance = 75  # distance the agent can see
         self.view_resolution = 720  # number of rays to cast within field of view
+
+        self.path_resolution = 10  # minimum distance between points on the recorded path
 
         self.pos = pos  # position of the agent
         self.size = size  # size of the agent body
@@ -45,6 +47,8 @@ class Agent:
 
     def get_field_of_view(self):
         """Computes what the agent can see."""
+        if self.vel == 0:
+            return  # no need to recalculate the field of view when the agent is stationary
         visible_points = []
         for i in range(self.view_resolution):
             # Angle of the ray
@@ -88,11 +92,10 @@ class Agent:
             # Normalize the direction vector and scale it to the desired force
             force = direction
             if distance != 0:  # vectors of length can't be normalized
-                force = force.normalize()
-            force = direction * distance * self.acceleration_coefficient
+                force = force.normalize() * self.acceleration_coefficient
             self.apply_force(force)
             # If the agent is close to the target location, stop moving
-            if distance < 50 and self.vel.length() <= 0.5:
+            if distance < self.size*10 and self.vel.length() <= 0.5:
                 self.current_action = None
 
         self.vel += self.acc
@@ -111,7 +114,10 @@ class Agent:
         if self.near_obstacle():
             self.total_collision_time += 1
 
-        self.path.append(self.rect.center)
+        # if (distance from last point in self.path is greater than threshold, add new point to path)
+        path_vector = pygame.Vector2(self.rect.center) - pygame.Vector2(self.path[-1])
+        if path_vector.length() > self.path_resolution:
+            self.path.append(self.rect.center)
 
     def apply_force(self, force):
         """Helper method, accelerates the agent."""
