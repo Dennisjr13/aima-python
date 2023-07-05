@@ -1,8 +1,10 @@
 import pygame
+from utils import create_surface
 
 from search import UndirectedGraph
 from grid_map import GridMap
 from utils import create_surface
+import numpy as np
 
 
 class Simulation:
@@ -12,7 +14,7 @@ class Simulation:
         self.env = env
 
         self.screen_size = self.env.size
-        self.window_size = (2*self.screen_size[0], self.screen_size[1])
+        self.window_size = (2 * self.screen_size[0], self.screen_size[1])
 
         self.agent = agent
         self.grid = GridMap(self.screen_size)
@@ -104,14 +106,21 @@ class Simulation:
         self.draw_map()
 
     def points_to_graph(self):
-        """ Create a new UndirectedGraph from the visible points on the map """
+        """ Create a new UndirectedGraph from the visible points on the map.
+            g[0] is the current location """
         g = UndirectedGraph()
-        g.locations = {}
-        for idx, point in enumerate(self.agent.visible_points):
+        g.locations = {0: (float(self.agent.pos[0]), float(self.agent.pos[1]))}  # current position
+        for idx, point in enumerate(self.agent.visible_points, 1):
             g.locations[idx] = (point.x, point.y)
 
-        # TODO: make real connections
-        g.connect(0, 1, 1)
+        # current node coordinates
+        cur_node = g.locations[0]
+
+        # make connections from current node to all other visible nodes
+        for node_id, node_coords in g.locations.items():
+            if node_id != 0:
+                distance = np.linalg.norm([cur_node[0] - node_coords[0], cur_node[1] - node_coords[1]])
+                g.connect(0, node_id, distance)  # TODO: should this instead make connections bi-directional?
         return g
 
     def run(self):
@@ -155,7 +164,7 @@ class Simulation:
             pygame.display.flip()
 
             # Creates a valid graph for ProblemSolvingAgent
-            # graph = self.points_to_graph()
+            graph = self.points_to_graph()
 
             # TODO: use an algorithm to determine next move
 
