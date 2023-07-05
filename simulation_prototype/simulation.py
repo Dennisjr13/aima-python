@@ -20,11 +20,12 @@ class Simulation:
         self.grid = GridMap(self.screen_size)
         self.screen = pygame.display.set_mode(self.window_size)
 
-        # increase computational efficiency
+        # increase computational efficiency (boilerplate)
         self.agent_surface = create_surface(self.screen_size)
         self.goal_surface = create_surface(self.screen_size)
         self.obstacle_surface = create_surface(self.screen_size)
         self.fov_surface = create_surface(self.screen_size)
+        self.fov_points_surface = create_surface(self.screen_size)
         self.hit_box_surface = create_surface(self.screen_size)
 
         # configurable
@@ -59,6 +60,13 @@ class Simulation:
             # Draw the field of view as a polygon with transparency
             pygame.draw.polygon(self.fov_surface, pygame.Color(255, 255, 255, 100), self.agent.visible_points)
         self.screen.blit(self.fov_surface, (0, 0))
+
+    def draw_field_of_view_points(self):
+        """For debugging purposes."""
+        self.fov_points_surface.fill((0, 0, 0, 0))
+        for point in self.agent.visible_points:
+            pygame.draw.circle(self.fov_points_surface, pygame.Color(0, 0, 255, 255), point, 1)
+        self.screen.blit(self.fov_points_surface, (0, 0))
 
     def draw_timer(self):
         if self.timer_start is not None:
@@ -102,6 +110,8 @@ class Simulation:
         self.draw_obstacles()
         self.draw_timer()
         self.draw_collision_time()
+
+        self.draw_field_of_view_points()  # for debugging
 
         self.draw_map()
 
