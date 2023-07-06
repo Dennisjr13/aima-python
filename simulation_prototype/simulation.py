@@ -1,5 +1,4 @@
 import pygame
-from utils import create_surface
 
 from search import UndirectedGraph
 from grid_map import GridMap
@@ -14,10 +13,10 @@ class Simulation:
         self.env = env
 
         self.screen_size = self.env.size
-        self.window_size = (2 * self.screen_size[0], self.screen_size[1])
+        self.window_size = (2 * self.screen_size[0], 2*self.screen_size[1])
 
         self.agent = agent
-        self.grid = GridMap(self.screen_size)
+        self.grid = GridMap(self.agent, self.screen_size)
         self.screen = pygame.display.set_mode(self.window_size)
 
         # increase computational efficiency (boilerplate)
@@ -28,6 +27,7 @@ class Simulation:
         self.fov_points_surface = create_surface(self.screen_size)
         self.hit_box_surface = create_surface(self.screen_size)
         self.stopping_bounds_surface = create_surface(self.screen_size)
+        self.grid_surface = create_surface(self.screen_size)
 
         # configurable
         self.fps = 60  # refresh rate of the simulation
@@ -97,19 +97,47 @@ class Simulation:
         print(self.agent.stopping_distance)
         self.screen.blit(self.stopping_bounds_surface, (0, 0))
 
-    def draw_map(self, x='a', y='a'):
+    def draw_map(self, x=-999, y=-999):
         """Draws the SLAM on the right half of the window."""
         self.agent.map.draw()
-        if x == 'a':
+        if x == -999:
             x = self.screen_size[0]
-        if y == 'a':
+        if y == -999:
             y = 0
         self.screen.blit(self.agent.map.surface, (x, y))
 
-    def draw_grid(self, x='a', y='a'):
+    def draw_grid(self, x=-999, y=-999):
         """Draws the discrete version of the map.
         This is used for graph search."""
-        pass
+        if x == -999:
+            x = 0
+        if y == -999:
+            y = self.screen_size[1]
+
+        self.grid_surface.fill((255, 255, 255, 255))
+
+        width = self.grid.cell_width
+        height = self.grid.cell_height
+
+        for i in range(self.grid.width):
+            for j in range(self.grid.height):
+                # fill with a color corresponding to cell status
+                color = self.grid.cell_color(i, j)
+                pygame.draw.rect(self.grid_surface, color,
+                                 (i*width, j*height, width, height))
+
+        # draw grid outlines
+        bt = 1  # border thickness of grid lines
+
+        for i in range(self.grid.width + 1):
+            pygame.draw.line(self.grid_surface, pygame.Color(0, 0, 0, 255),
+                             (i * width, 0), (i * width, self.screen_size[1]), bt)
+
+        for j in range(self.grid.height + 1):
+            pygame.draw.line(self.grid_surface, pygame.Color(0, 0, 0, 255),
+                             (0, j * height), (self.screen_size[0], j * height), bt)
+
+        self.screen.blit(self.grid_surface, (x, y))
 
     def draw_everything(self):
         self.agent.get_field_of_view()
@@ -128,6 +156,7 @@ class Simulation:
         self.draw_timer()
         self.draw_collision_time()
         self.draw_map()
+        self.draw_grid(0, self.screen_size[1])
 
     def points_to_graph(self):
         """ Create a new UndirectedGraph from the visible points on the map.
@@ -177,6 +206,7 @@ class Simulation:
 
             # the agent can't move when the goal is found
             if not self.agent.goal_found:
+                self.grid.update_cell_values()
                 self.agent.move()
             else:
                 self.agent.vel = 0

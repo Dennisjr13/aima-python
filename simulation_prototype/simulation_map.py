@@ -37,7 +37,12 @@ class Map:
     def draw_obstacle_highlights(self):
         """Shows points that have been identified as part of an obstacle."""
         for point in self.agent.obstacle_points:
-            pygame.draw.circle(self.surface, (255, 0, 0), point, 2)
+            pygame.draw.circle(self.surface, (255, 0, 0), point, 1)
+
+    def draw_non_obstacle_highlights(self):
+        """For debugging purposes."""
+        for point in self.agent.non_obstacle_points:
+            pygame.draw.circle(self.surface, (0, 255, 0), point, 1)
 
     def draw(self):
         """Displays the updated SLAM for the user to see."""
@@ -46,3 +51,4 @@ class Map:
         self.draw_goal()
         self.draw_path()
         self.draw_obstacle_highlights()
+        # self.draw_non_obstacle_highlights()  # for debugging

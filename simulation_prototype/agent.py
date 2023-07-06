@@ -35,6 +35,7 @@ class Agent:
         self.visible_points = []  # shows what the agent currently sees
         self.path = [pos]  # keeps track of where the agent has been
         self.obstacle_points = []  # keeps track of the edges of obstacles encountered
+        self.non_obstacle_points = []  # any points in visible_points that are not in obstacle_points
         self.total_collision_time = 0
         self.goal_found = False
 
@@ -72,7 +73,9 @@ class Agent:
                     if distance < closest_distance:
                         closest_distance = distance
                         closest_intersection_point = point
-            if closest_intersection_point is not None:
+            if closest_intersection_point is None:
+                self.non_obstacle_points.append(end_pos)
+            else:
                 end_pos = pygame.Vector2(closest_intersection_point)
                 self.obstacle_points.append(end_pos)
             # Store the end position of the ray
