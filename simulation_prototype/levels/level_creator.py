@@ -9,6 +9,7 @@ Exit the app when you're done assigning coordinates, then give a file name.
 Information about the level will be exported as a JSON file.
 
 Left Click and Drag - create a new Rectangle obstacle
+(MAKE SURE TO DRAG IN THE DIRECTION FROM TOP-LEFT TO BOTTOM-RIGHT)
 Right Click - cycles between assigning 
 the agent's starting position and the goal's position
 
