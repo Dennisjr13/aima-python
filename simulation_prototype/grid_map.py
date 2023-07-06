@@ -18,14 +18,14 @@ class GridMap:
 
         self.cell_width = self.size[0]/self.width
         self.cell_height = self.size[1]/self.height
+
+        # node weights corresponding to each cell status/value
+        self.UN = 0  # unexplored
+        self.FR = 1  # free space
+        self.OB = 2  # obstacle
+
         self.graph = self.initialize_graph()
         self.obstacle_locations = set()
-
-        """
-        0 -> unexplored
-        1 -> free space
-        2 -> obstacle
-        """
 
     def get_cell_idx(self, x_coordinate, y_coordinate):
         """
@@ -44,29 +44,28 @@ class GridMap:
     def initialize_graph(self):
         # graph[i][j] corresponds to the cell
         # on the ith row, jth column
-        default_value = 0
-        graph = [[default_value for j in range(self.height)]
-                 for i in range(self.width)]
+        graph = [[self.UN for _ in range(self.height)]
+                 for _ in range(self.width)]
         return graph
 
-    def cell_color(self, row, column):
+    def cell_color(self, i, j):
         """Returns the color corresponding to the status of the cell."""
-        status = self.graph[row][column]
-        if status == 0:
+        status = self.graph[i][j]
+        if status == self.UN:
             return Color(0, 0, 0, 255)
-        elif status == 1:
+        elif status == self.FR:
             return Color(255, 255, 255, 255)
-        else:  # status == 2
+        else:  # status == self.OB
             return Color(255, 0, 0, 255)
 
     def update_cell_values(self):
         for point in self.agent.non_obstacle_points:
             x_idx, y_idx = self.get_cell_idx(*point)
-            self.update_cell_value(1, x_idx, y_idx)
+            self.update_cell_value(self.FR, x_idx, y_idx)
 
         for point in self.agent.obstacle_points:
             x_idx, y_idx = self.get_cell_idx(*point)
-            self.update_cell_value(2, x_idx, y_idx)
+            self.update_cell_value(self.OB, x_idx, y_idx)
             self.obstacle_locations.update((x_idx, y_idx))
 
     def update_cell_value(self, new_value, x_idx, y_idx):
