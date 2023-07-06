@@ -3,7 +3,7 @@ from utils import bound
 
 
 class GridMap:
-    def __init__(self, agent, size=(500, 500), width=100, height=100):
+    def __init__(self, agent, size, width=100, height=100):
         """
         For example: a map with a screen size 500x500 pixels
         can be converted into a grid map with 100x100 cells,
@@ -19,6 +19,7 @@ class GridMap:
         self.cell_width = self.size[0]/self.width
         self.cell_height = self.size[1]/self.height
         self.graph = self.initialize_graph()
+        self.obstacle_locations = set()
 
         """
         0 -> unexplored
@@ -38,7 +39,7 @@ class GridMap:
         y_idx = y_coordinate // self.cell_height
         y_idx = bound(y_idx, 0, self.height - 1)
 
-        return x_idx, y_idx
+        return int(x_idx), int(y_idx)
 
     def initialize_graph(self):
         # graph[i][j] corresponds to the cell
@@ -56,28 +57,24 @@ class GridMap:
         elif status == 1:
             return Color(255, 255, 255, 255)
         else:  # status == 2
-            return Color(0, 0, 255, 255)
+            return Color(255, 0, 0, 255)
 
     def update_cell_values(self):
-        agent_x_idx, agent_y_idx = self.agent.pos
         for point in self.agent.non_obstacle_points:
             x_idx, y_idx = self.get_cell_idx(*point)
-            x_idx = int(x_idx)
-            y_idx = int(y_idx)
             self.update_cell_value(1, x_idx, y_idx)
-            # also need to update the values of cells between
-            # the agent and the end of the ray
-            # !!!
 
         for point in self.agent.obstacle_points:
             x_idx, y_idx = self.get_cell_idx(*point)
-            x_idx = int(x_idx)
-            y_idx = int(y_idx)
             self.update_cell_value(2, x_idx, y_idx)
+            self.obstacle_locations.update((x_idx, y_idx))
 
     def update_cell_value(self, new_value, x_idx, y_idx):
         """Helper method, updates value of a single cell."""
-        self.graph[x_idx][y_idx] = new_value
+        try:
+            self.graph[x_idx][y_idx] = new_value
+        except:
+            print(x_idx, y_idx)
 
 
 # for debugging purposes

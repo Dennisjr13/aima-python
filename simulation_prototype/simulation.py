@@ -13,7 +13,7 @@ class Simulation:
         self.env = env
 
         self.screen_size = self.env.size
-        self.window_size = (2 * self.screen_size[0], 2*self.screen_size[1])
+        self.window_size = (2 * self.screen_size[0], self.screen_size[1])
 
         self.agent = agent
         self.grid = GridMap(self.agent, self.screen_size)
@@ -155,8 +155,8 @@ class Simulation:
 
         self.draw_timer()
         self.draw_collision_time()
-        self.draw_map()
-        self.draw_grid(0, self.screen_size[1])
+        # self.draw_map()
+        self.draw_grid(self.screen_size[0], 0)
 
     def points_to_graph(self):
         """ Create a new UndirectedGraph from the visible points on the map.

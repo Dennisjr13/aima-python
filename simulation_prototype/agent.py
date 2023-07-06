@@ -1,5 +1,6 @@
 import pygame
 from simulation_map import Map
+from grid_map import GridMap
 
 
 class Agent:
@@ -22,7 +23,7 @@ class Agent:
         self.friction = 0.5  # friction factor (between 0 and 1)
 
         self.view_distance = 75  # distance the agent can see
-        self.view_resolution = 720  # number of rays to cast within field of view
+        self.view_resolution = 90  # number of rays to cast within field of view
 
         self.path_resolution = 10  # minimum distance between points on the recorded path
 
@@ -78,6 +79,7 @@ class Agent:
             else:
                 end_pos = pygame.Vector2(closest_intersection_point)
                 self.obstacle_points.append(end_pos)
+
             # Store the end position of the ray
             visible_points.append(end_pos)
         # Store the points in the agent's field of view

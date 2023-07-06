@@ -12,7 +12,9 @@ Timer functionality added. SLAM added.
 
 
 def main():
-    parser = JSONParser("default_downscaled")
+    file_name = "test1"
+
+    parser = JSONParser(file_name)
 
     obstacles = list(map(lambda x: pygame.Rect(*x), parser.obstacles))
 
