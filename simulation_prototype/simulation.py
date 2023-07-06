@@ -27,6 +27,7 @@ class Simulation:
         self.fov_surface = create_surface(self.screen_size)
         self.fov_points_surface = create_surface(self.screen_size)
         self.hit_box_surface = create_surface(self.screen_size)
+        self.stopping_bounds_surface = create_surface(self.screen_size)
 
         # configurable
         self.fps = 60  # refresh rate of the simulation
@@ -82,9 +83,19 @@ class Simulation:
 
     def draw_hit_box(self):
         self.hit_box_surface.fill((0, 0, 0, 0))
-        pygame.draw.circle(self.screen, (255, 0, 0), self.agent.rect.center, self.agent.collision_distance,
-                           1)  # Draw a red circle with a thickness of 1 pixel
+        pygame.draw.circle(self.hit_box_surface, (255, 0, 0),
+                           self.agent.rect.center,
+                           self.agent.collision_distance, 1)  # Draw a red circle with a thickness of 1 pixel
         self.screen.blit(self.hit_box_surface, (0, 0))
+
+    def draw_stopping_bounds(self):
+        """For debugging purposes."""
+        self.stopping_bounds_surface.fill((0, 0, 0, 0))
+        pygame.draw.circle(self.stopping_bounds_surface, (255, 0, 255),
+                           self.agent.rect.center,
+                           max(self.agent.stopping_distance, 10), 1)  # Draw a red circle with a thickness of 1 pixel
+        print(self.agent.stopping_distance)
+        self.screen.blit(self.stopping_bounds_surface, (0, 0))
 
     def draw_map(self, x='a', y='a'):
         """Draws the SLAM on the right half of the window."""
@@ -103,16 +114,19 @@ class Simulation:
     def draw_everything(self):
         self.agent.get_field_of_view()
         self.draw_field_of_view()
-        self.draw_hit_box()
 
         self.draw_agent()
-        self.draw_goal()
         self.draw_obstacles()
-        self.draw_timer()
-        self.draw_collision_time()
+
+        self.draw_hit_box()
 
         self.draw_field_of_view_points()  # for debugging
+        # self.draw_stopping_bounds()  # for debugging
 
+        self.draw_goal()
+
+        self.draw_timer()
+        self.draw_collision_time()
         self.draw_map()
 
     def points_to_graph(self):
@@ -174,7 +188,7 @@ class Simulation:
             pygame.display.flip()
 
             # Creates a valid graph for ProblemSolvingAgent
-            graph = self.points_to_graph()
+            # graph = self.points_to_graph()
 
             # TODO: use an algorithm to determine next move
 

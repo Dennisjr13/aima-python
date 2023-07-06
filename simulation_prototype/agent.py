@@ -19,7 +19,7 @@ class Agent:
         # configurable settings for the agent
         self.max_speed = 10  # max speed to prevent the agent from going too fast
         self.acceleration_coefficient = 2
-        self.friction = 0.4  # friction factor (between 0 and 1)
+        self.friction = 0.5  # friction factor (between 0 and 1)
 
         self.view_distance = 75  # distance the agent can see
         self.view_resolution = 720  # number of rays to cast within field of view
@@ -29,6 +29,7 @@ class Agent:
         self.pos = pos  # position of the agent
         self.size = size  # size of the agent body
         self.collision_distance = self.size * 2  # the agent's hit box
+        self.stopping_distance = 20  # to ensure that the agent slows down and doesn't overshoot
 
         # knowledge base
         self.visible_points = []  # shows what the agent currently sees
@@ -95,7 +96,7 @@ class Agent:
                 force = force.normalize() * self.acceleration_coefficient
             self.apply_force(force)
             # If the agent is close to the target location, stop moving
-            if distance < self.size*10 and self.vel.length() <= 0.5:
+            if distance < self.stopping_distance:
                 self.current_action = None
 
         self.vel += self.acc
@@ -109,6 +110,9 @@ class Agent:
         if self.vel.length() > 0:  # Only apply friction if the agent is moving
             direction = self.vel.normalize()  # Get the direction of movement
             self.vel -= direction * self.friction  # Apply friction in the direction of movement
+            if self.current_action is None:
+                self.vel *= self.friction
+                # agent slows down more when destination is within stopping distance
         self.acc *= 0
 
         if self.near_obstacle():
