@@ -12,7 +12,7 @@ Timer functionality added. SLAM added.
 
 
 def main():
-    file_name = "test1"
+    file_name = "default_downscaled.json"
 
     parser = JSONParser(file_name)
 

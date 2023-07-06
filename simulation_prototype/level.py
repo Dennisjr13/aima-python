@@ -7,6 +7,8 @@ import os
 
 class JSONParser:
     def __init__(self, filename):
+        if filename[-5:] == ".json":
+            filename = filename[:-5]
         file_dir = os.getcwd() + f'\\levels\\{filename}.json'
         with open(file_dir, 'r') as file:
             data = json.load(file)
