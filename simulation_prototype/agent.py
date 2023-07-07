@@ -104,6 +104,8 @@ class Agent:
         else:
             self.vel = pygame.Vector2(0, 0)  # Stop if we bump into something
 
+        self.pos = self.rect.center
+
         if self.near_obstacle():
             self.total_collision_time += 1
 

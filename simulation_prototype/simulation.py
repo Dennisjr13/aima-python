@@ -32,7 +32,18 @@ class Simulation:
 
         self.has_solution = False
 
+    def plan_path(self, event):
+        """
+        Change the method called below to swap algorithms.
+        """
+        self.rrt_solve(event)
+        # self.insert_method_solve(event)
+
     def rrt_solve(self, event):
+        """
+        Plans a path from start to goal using RRT.
+        Press [S] to solve. Press [M] to move the agent along the path.
+        """
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_s:  # press [S] to solve
                 if not self.has_solution:
@@ -47,6 +58,12 @@ class Simulation:
                     path_copy.pop()  # remove the starting position
                     while path_copy:
                         self.agent.queue_action(path_copy.pop())
+
+    def insert_method_solve(self, event):
+        # Creates a valid graph for ProblemSolvingAgent
+        # graph = self.points_to_graph()
+        # TODO: use an algorithm to determine next move
+        pass
 
     def points_to_graph(self):
         """ Create a new UndirectedGraph from the visible points on the map.
@@ -74,38 +91,27 @@ class Simulation:
             # draws things
             self.draw.draw_everything()
 
-            # Stop the timer if the goal is in the agent's field of view
-            # if any(pygame.Vector2(self.env.goal).distance_squared_to(point)
-            #       <= self.agent.size ** 2 for point in self.agent.visible_points):
-            if dist(self.agent.pos, self.env.goal) < self.agent.size:
+            # if the agent reaches the goal, the simulation stops
+            dist_from_goal = dist(self.agent.pos, self.env.goal)
+            goal_threshold = self.agent.size * 2
+            if dist_from_goal < goal_threshold:
                 self.agent.goal_found = True
 
             # mouseclick events
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False  # closes the simulation window
-                """elif event.type == pygame.MOUSEBUTTONDOWN:
-                    within_x_bound = pygame.mouse.get_pos()[0] <= self.screen_size[0]
-                    within_y_bound = pygame.mouse.get_pos()[1] <= self.screen_size[1]
-                    if within_x_bound and within_y_bound:
-                        self.agent.queue_action(event.pos)  # move agent towards mouse"""
-                self.rrt_solve(event)
+
+                # Path-Planning Algorithm
+                self.plan_path(event)
 
             # the agent can't move when the goal is found
             if not self.agent.goal_found:
-                self.grid.update_cell_values()
                 self.agent.move()
-            else:
-                self.agent.vel = 0
             # Limit the frame rate (frames per second)
             clock.tick(self.fps)
 
             # Update the display
             pygame.display.flip()
-
-            # Creates a valid graph for ProblemSolvingAgent
-            # graph = self.points_to_graph()
-
-            # TODO: use an algorithm to determine next move
 
         pygame.quit()
