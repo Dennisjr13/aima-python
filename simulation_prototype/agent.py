@@ -1,6 +1,5 @@
 import pygame
 from simulation_map import Map
-from grid_map import GridMap
 
 
 class Agent:
@@ -11,26 +10,23 @@ class Agent:
         self.surface = pygame.Surface(env.size)
         self.map = Map(env, self)
         self.vel = pygame.Vector2(0, 0)
-        self.acc = pygame.Vector2(0, 0)
 
         # needed for moveTo
         self.current_action = None
         self.action_queue = []
 
         # configurable settings for the agent
-        self.max_speed = 10  # max speed to prevent the agent from going too fast
-        self.acceleration_coefficient = 2
-        self.friction = 0.5  # friction factor (between 0 and 1)
+        self.max_speed = 10
 
         self.view_distance = 75  # distance the agent can see
-        self.view_resolution = 90  # number of rays to cast within field of view
+        self.view_resolution = 720  # number of rays to cast within field of view
 
         self.path_resolution = 10  # minimum distance between points on the recorded path
 
         self.pos = pos  # position of the agent
         self.size = size  # size of the agent body
         self.collision_distance = self.size * 2  # the agent's hit box
-        self.stopping_distance = 20  # to ensure that the agent slows down and doesn't overshoot
+        self.stopping_distance = self.size * 2  # to ensure that the agent slows down and doesn't overshoot
 
         # knowledge base
         self.visible_points = []  # shows what the agent currently sees
@@ -91,34 +87,22 @@ class Agent:
         if self.current_action is None:
             if self.action_queue:
                 self.current_action = self.action_queue.pop(0)
+                direction = self.current_action - pygame.Vector2(self.rect.center)
+                self.vel = direction.normalize() * self.max_speed
         else:
             # Calculate the direction vector to the target location
             direction = self.current_action - pygame.Vector2(self.rect.center)
             distance = direction.length()
-            # Normalize the direction vector and scale it to the desired force
-            force = direction
-            if distance != 0:  # vectors of length can't be normalized
-                force = force.normalize() * self.acceleration_coefficient
-            self.apply_force(force)
             # If the agent is close to the target location, stop moving
             if distance < self.stopping_distance:
                 self.current_action = None
+                self.vel = pygame.Vector2(0, 0)
 
-        self.vel += self.acc
-        if self.vel.length() > self.max_speed:  # if velocity exceeds max_speed
-            self.vel.scale_to_length(self.max_speed)  # limit it
         new_rect = self.rect.move(self.vel.x, self.vel.y)
         if self.valid_pos(new_rect):
             self.rect = new_rect
         else:
             self.vel = pygame.Vector2(0, 0)  # Stop if we bump into something
-        if self.vel.length() > 0:  # Only apply friction if the agent is moving
-            direction = self.vel.normalize()  # Get the direction of movement
-            self.vel -= direction * self.friction  # Apply friction in the direction of movement
-            if self.current_action is None:
-                self.vel *= self.friction
-                # agent slows down more when destination is within stopping distance
-        self.acc *= 0
 
         if self.near_obstacle():
             self.total_collision_time += 1
@@ -127,10 +111,6 @@ class Agent:
         path_vector = pygame.Vector2(self.rect.center) - pygame.Vector2(self.path[-1])
         if path_vector.length() > self.path_resolution:
             self.path.append(self.rect.center)
-
-    def apply_force(self, force):
-        """Helper method, accelerates the agent."""
-        self.acc += force
 
     def near_obstacle(self):
         """Returns true if the agent is colliding with an obstacle; i.e.,
