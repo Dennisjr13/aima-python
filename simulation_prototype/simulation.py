@@ -5,6 +5,7 @@ import numpy as np
 from RRT_agent import RRTAgent
 import copy
 from draw import Draw
+from math import dist
 
 
 class Simulation:
@@ -29,10 +30,23 @@ class Simulation:
         font_size = 36  # size of text on screen
         self.font = pygame.font.Font(None, font_size)  # boilerplate
 
-        # timer
-        self.timer_start = None
-        self.timer_end = None  # time when the agent finds the goal
         self.has_solution = False
+
+    def rrt_solve(self, event):
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_s:  # press [S] to solve
+                if not self.has_solution:
+                    print("Solving...")
+                    self.solution_path = self.rrt_agent.solve()
+                    print("Solved!")
+                    self.has_solution = True
+            if event.key == pygame.K_m:  # press [M] to move agent along the path
+                if self.has_solution:
+                    print("Moving...")
+                    path_copy = copy.deepcopy(self.solution_path)
+                    path_copy.pop()  # remove the starting position
+                    while path_copy:
+                        self.agent.queue_action(path_copy.pop())
 
     def points_to_graph(self):
         """ Create a new UndirectedGraph from the visible points on the map.
@@ -55,17 +69,15 @@ class Simulation:
     def run(self):
         running = True
         clock = pygame.time.Clock()
-        self.timer_start = pygame.time.get_ticks()
 
         while running:
             # draws things
             self.draw.draw_everything()
 
             # Stop the timer if the goal is in the agent's field of view
-            if self.timer_end is None and any(
-                    pygame.Vector2(self.env.goal).distance_squared_to(point) <= self.agent.size ** 2 for point in
-                    self.agent.visible_points):
-                self.timer_end = pygame.time.get_ticks()
+            # if any(pygame.Vector2(self.env.goal).distance_squared_to(point)
+            #       <= self.agent.size ** 2 for point in self.agent.visible_points):
+            if dist(self.agent.pos, self.env.goal) < self.agent.size:
                 self.agent.goal_found = True
 
             # mouseclick events
@@ -77,21 +89,7 @@ class Simulation:
                     within_y_bound = pygame.mouse.get_pos()[1] <= self.screen_size[1]
                     if within_x_bound and within_y_bound:
                         self.agent.queue_action(event.pos)  # move agent towards mouse"""
-                if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_s:  # press [S] to solve
-                        if not self.has_solution:
-                            print("Solving...")
-                            self.solution_path = self.rrt_agent.solve()
-                            print("Solved!")
-                            print(len(self.solution_path))
-                            self.has_solution = True
-                    if event.key == pygame.K_m:
-                        if self.has_solution:
-                            print("Moving...")
-                            path_copy = copy.deepcopy(self.solution_path)
-                            path_copy.pop()  # remove the starting position
-                            while path_copy:
-                                self.agent.queue_action(path_copy.pop())
+                self.rrt_solve(event)
 
             # the agent can't move when the goal is found
             if not self.agent.goal_found:

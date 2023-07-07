@@ -26,7 +26,8 @@ class RRTAgent:
         self.root = Node(self.agent.pos)  # root of tree
 
         self.goal_found = False
-        self.iterations = 0
+        self.iterations = 0  # for debugging
+        self.path_cost = 0
 
         # the distance between two nodes cannot exceed this
         self.distance_threshold = 20  # self.agent.size*10
@@ -114,6 +115,9 @@ class RRTAgent:
         node = self.last_node_added
         while node is not None:
             path.append((node.x, node.y))
+            if node.parent is not None:
+                self.path_cost += dist((node.x, node.y),
+                                       (node.parent.x, node.parent.y))
             node = node.parent
         return path
 

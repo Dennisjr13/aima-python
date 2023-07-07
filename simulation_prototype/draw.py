@@ -23,6 +23,31 @@ class Draw:
         self.path_surface = create_surface(self.size)
         self.tree_surface = create_surface(self.size)
 
+    def draw_everything(self):
+        self.screen.fill((211, 211, 211))  # color of free space
+
+        # self.agent.get_field_of_view()
+        # self.draw_field_of_view()
+
+        self.draw_agent()
+        self.draw_obstacles()
+
+        self.draw_hit_box()
+
+        # self.draw_field_of_view_points()  # for debugging
+        # self.draw_stopping_bounds()  # for debugging
+
+        self.draw_goal()
+
+        self.draw_tree()
+        self.draw_path()
+
+        self.draw_path_cost()
+        self.draw_collision_time()  # not relevant anymore
+
+        # self.draw_map()
+        # self.draw_grid(self.size[0], 0)
+
     def draw_agent(self):
         self.agent_surface.fill((0, 0, 0, 0))
         pygame.draw.circle(self.agent_surface, (0, 0, 255),
@@ -55,8 +80,7 @@ class Draw:
         self.screen.blit(self.fov_points_surface, (0, 0))
 
     def draw_path_cost(self):
-        # !!! implement something to display the path cost
-        text = self.sim.font.render(f'Path Cost: {0}', True, (0, 0, 0))
+        text = self.sim.font.render(f'Path Cost: {self.sim.rrt_agent.path_cost:.2f}', True, (0, 0, 0))
         self.screen.blit(text, (0, 0))
 
     def draw_collision_time(self):
@@ -149,27 +173,3 @@ class Draw:
                              (node.x, node.y), (node.parent.x, node.parent.y))
         for child in node.children:
             self.draw_node(child)
-
-    def draw_everything(self):
-        self.screen.fill((211, 211, 211))  # color of free space
-
-        # self.agent.get_field_of_view()
-        # self.draw_field_of_view()
-
-        self.draw_agent()
-        self.draw_obstacles()
-
-        self.draw_hit_box()
-
-        # self.draw_field_of_view_points()  # for debugging
-        # self.draw_stopping_bounds()  # for debugging
-
-        self.draw_goal()
-
-        self.draw_path_cost()
-        self.draw_collision_time()  # not relevant anymore
-
-        self.draw_tree()
-        self.draw_path()
-        # self.draw_map()
-        # self.draw_grid(self.size[0], 0)
