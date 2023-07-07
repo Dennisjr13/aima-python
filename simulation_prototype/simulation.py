@@ -4,6 +4,8 @@ from search import UndirectedGraph
 from grid_map import GridMap
 from utils import create_surface
 import numpy as np
+from RRT_agent import RRTAgent
+import copy
 
 
 class Simulation:
@@ -13,9 +15,12 @@ class Simulation:
         self.env = env
 
         self.screen_size = self.env.size
-        self.window_size = (2 * self.screen_size[0], self.screen_size[1])
+        self.window_size = (self.screen_size[0], self.screen_size[1])
 
         self.agent = agent
+        self.rrt_agent = RRTAgent(self.agent)
+        self.solution_path = []
+
         self.grid = GridMap(self.agent, self.screen_size)
         self.screen = pygame.display.set_mode(self.window_size)
 
@@ -29,6 +34,9 @@ class Simulation:
         self.stopping_bounds_surface = create_surface(self.screen_size)
         self.grid_surface = create_surface(self.screen_size)
 
+        self.path_surface = create_surface(self.screen_size)
+        self.tree_surface = create_surface(self.screen_size)
+
         # configurable
         self.fps = 60  # refresh rate of the simulation
         font_size = 36  # size of text on screen
@@ -37,6 +45,7 @@ class Simulation:
         # timer
         self.timer_start = None
         self.timer_end = None  # time when the agent finds the goal
+        self.has_solution = False
 
     def draw_agent(self):
         self.agent_surface.fill((0, 0, 0, 0))
@@ -139,24 +148,55 @@ class Simulation:
 
         self.screen.blit(self.grid_surface, (x, y))
 
+    def draw_path(self):
+        path_length = len(self.solution_path)
+        if not self.has_solution:
+            return
+        self.path_surface.fill((0, 0, 0, 0))
+
+        path_copy = copy.deepcopy(self.solution_path)
+        previous = path_copy.pop()
+        while path_copy:
+            current = path_copy.pop()
+            pygame.draw.line(self.path_surface, pygame.Color(0, 0, 255), current, previous)
+            previous = current
+        self.screen.blit(self.path_surface, (0, 0))
+
+    def draw_tree(self):
+        self.tree_surface.fill((0, 0, 0, 0))
+
+        self.draw_node(self.rrt_agent.root)
+
+        self.screen.blit(self.tree_surface, (0, 0))
+
+    def draw_node(self, node):
+        if node.parent is not None:
+            pygame.draw.line(self.tree_surface, pygame.Color(255, 255, 0),
+                             (node.x, node.y), (node.parent.x, node.parent.y))
+        for child in node.children:
+            self.draw_node(child)
+
     def draw_everything(self):
-        self.agent.get_field_of_view()
-        self.draw_field_of_view()
+        # self.agent.get_field_of_view()
+        # self.draw_field_of_view()
 
         self.draw_agent()
         self.draw_obstacles()
 
-        self.draw_hit_box()
+        # self.draw_hit_box()
 
-        self.draw_field_of_view_points()  # for debugging
+        # self.draw_field_of_view_points()  # for debugging
         # self.draw_stopping_bounds()  # for debugging
 
         self.draw_goal()
 
-        self.draw_timer()
-        self.draw_collision_time()
+        # self.draw_timer()
+        # self.draw_collision_time()
+
+        self.draw_tree()
+        self.draw_path()
         # self.draw_map()
-        self.draw_grid(self.screen_size[0], 0)
+        # self.draw_grid(self.screen_size[0], 0)
 
     def points_to_graph(self):
         """ Create a new UndirectedGraph from the visible points on the map.
@@ -198,11 +238,26 @@ class Simulation:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False  # closes the simulation window
-                elif event.type == pygame.MOUSEBUTTONDOWN:
+                """elif event.type == pygame.MOUSEBUTTONDOWN:
                     within_x_bound = pygame.mouse.get_pos()[0] <= self.screen_size[0]
                     within_y_bound = pygame.mouse.get_pos()[1] <= self.screen_size[1]
                     if within_x_bound and within_y_bound:
-                        self.agent.queue_action(event.pos)  # move agent towards mouse
+                        self.agent.queue_action(event.pos)  # move agent towards mouse"""
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_s:  # press [S] to solve
+                        if not self.has_solution:
+                            print("Solving...")
+                            self.solution_path = self.rrt_agent.solve()
+                            print("Solved!")
+                            print(len(self.solution_path))
+                            self.has_solution = True
+                    if event.key == pygame.K_m:
+                        if self.has_solution:
+                            print("Moving...")
+                            path_copy = copy.deepcopy(self.solution_path)
+                            path_copy.pop()  # remove the starting position
+                            while path_copy:
+                                self.agent.queue_action(path_copy.pop())
 
             # the agent can't move when the goal is found
             if not self.agent.goal_found:
@@ -210,7 +265,6 @@ class Simulation:
                 self.agent.move()
             else:
                 self.agent.vel = 0
-
             # Limit the frame rate (frames per second)
             clock.tick(self.fps)
 
