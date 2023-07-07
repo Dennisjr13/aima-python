@@ -18,6 +18,7 @@ class Simulation:
 
         self.agent = agent
         self.rrt_agent = RRTAgent(self.agent)
+        # !!! [insert A* problem solving agent here]
         self.solution_path = []
 
         self.grid = GridMap(self.agent, self.screen_size)
@@ -36,6 +37,7 @@ class Simulation:
         Change the method called below to swap algorithms.
         """
         self.rrt_solve(event)
+        # self.astar_solve(event)
         # self.insert_method_solve(event)
 
     def rrt_solve(self, event):
@@ -57,6 +59,13 @@ class Simulation:
                     path_copy.pop()  # remove the starting position
                     while path_copy:
                         self.agent.queue_action(path_copy.pop())
+
+    def astar_solve(self, event):
+        """[...]"""
+        # note: this is where you can put your code for interfacing with
+        # the A* solving agent
+        # it should return a path of coordinates that the agent can follow.
+        pass
 
     def insert_method_solve(self, event):
         # Creates a valid graph for ProblemSolvingAgent
