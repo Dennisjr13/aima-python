@@ -1,5 +1,6 @@
 import pygame
 from simulation_map import Map
+from math import dist
 
 
 class Agent:
@@ -21,7 +22,8 @@ class Agent:
         self.view_distance = 75  # distance the agent can see
         self.view_resolution = 720  # number of rays to cast within field of view
 
-        self.path_resolution = 10  # minimum distance between points on the recorded path
+        self.path_resolution = 2  # minimum distance between points on the recorded path
+        self.path_cost_so_far = 0  # keeps track of the current path cost
 
         self.pos = pos  # position of the agent
         self.size = size  # size of the agent body
@@ -112,6 +114,7 @@ class Agent:
         # if (distance from last point in self.path is greater than threshold, add new point to path)
         path_vector = pygame.Vector2(self.rect.center) - pygame.Vector2(self.path[-1])
         if path_vector.length() > self.path_resolution:
+            self.path_cost_so_far += dist(self.rect.center, self.path[-1])
             self.path.append(self.rect.center)
 
     def near_obstacle(self):

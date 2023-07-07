@@ -1,12 +1,11 @@
 import pygame
+import numpy as np
 from search import UndirectedGraph
 from grid_map import GridMap
-import numpy as np
 from RRT_agent import RRTAgent
-import copy
 from draw import Draw
 from math import dist
-
+from copy import deepcopy
 
 class Simulation:
     def __init__(self, env, agent):
@@ -49,12 +48,12 @@ class Simulation:
                 if not self.has_solution:
                     print("Solving...")
                     self.solution_path = self.rrt_agent.solve()
-                    print("Solved!")
+                    print(f"Solved! Found with with path cost {self.rrt_agent.path_cost:2f}")
                     self.has_solution = True
             if event.key == pygame.K_m:  # press [M] to move agent along the path
                 if self.has_solution:
                     print("Moving...")
-                    path_copy = copy.deepcopy(self.solution_path)
+                    path_copy = deepcopy(self.solution_path)
                     path_copy.pop()  # remove the starting position
                     while path_copy:
                         self.agent.queue_action(path_copy.pop())

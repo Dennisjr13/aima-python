@@ -80,7 +80,7 @@ class Draw:
         self.screen.blit(self.fov_points_surface, (0, 0))
 
     def draw_path_cost(self):
-        text = self.sim.font.render(f'Path Cost: {self.sim.rrt_agent.path_cost:.2f}', True, (0, 0, 0))
+        text = self.sim.font.render(f'Path Cost: {self.sim.agent.path_cost_so_far:.2f}', True, (0, 0, 0))
         self.screen.blit(text, (0, 0))
 
     def draw_collision_time(self):
