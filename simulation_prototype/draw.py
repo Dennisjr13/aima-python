@@ -91,15 +91,6 @@ class Draw:
         pygame.draw.circle(self.point_surface, pygame.Color(255, 255, 0), point, 5)
         self.screen.blit(self.point_surface, (0, 0))
 
-    def draw_map(self, x=-999, y=-999):
-        """Draws the SLAM on the right half of the window."""
-        self.agent.map.draw()
-        if x == -999:
-            x = self.size[0]
-        if y == -999:
-            y = 0
-        self.screen.blit(self.agent.map.surface, (x, y))
-
     def draw_path(self):
         if not self.sim.has_solution:
             return

@@ -1,5 +1,4 @@
 import pygame
-from simulation_map import Map
 from math import dist
 
 
@@ -9,7 +8,6 @@ class Agent:
         self.env = env
         self.rect = pygame.Rect(*pos, size, size)
         self.surface = pygame.Surface(env.size)
-        self.map = Map(env, self)
         self.vel = pygame.Vector2(0, 0)
 
         # needed for moveTo
@@ -35,8 +33,6 @@ class Agent:
 
         # knowledge base
         self.path = [pos]  # keeps track of where the agent has been
-        self.obstacle_points = []  # keeps track of the edges of obstacles encountered
-        self.non_obstacle_points = []  # any points in visible_points that are not in obstacle_points
         self.total_collision_time = 0
         self.goal_found = False
 
