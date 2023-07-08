@@ -51,14 +51,17 @@ class RRTAgent:
         return self.build_path()
 
     def next_move(self):
-        if random() < self.rate:
-            self.point = self.goal
-        else:
-            self.point = self.random_point()
+        self.choose_new_point()
         self.best_score = inf
         self.find_closest_node(self.root)
         node = self.closest_node
         self.grow_tree(node)
+
+    def choose_new_point(self):
+        if random() < self.rate:
+            self.point = self.goal
+        else:
+            self.point = self.random_point()
 
     def random_point(self):
         """Choose a random point."""
