@@ -30,6 +30,9 @@ class Agent:
         self.collision_distance = self.size * 2  # the agent's hit box
         self.stopping_distance = self.size * 2  # to ensure that the agent slows down and doesn't overshoot
 
+        # debugging
+        self.closest_obs_point = None
+
         # knowledge base
         self.visible_points = []  # shows what the agent currently sees
         self.path = [pos]  # keeps track of where the agent has been
@@ -90,7 +93,9 @@ class Agent:
             if self.action_queue:
                 self.current_action = self.action_queue.pop(0)
                 direction = self.current_action - pygame.Vector2(self.rect.center)
-                self.vel = direction.normalize() * self.max_speed
+                if direction.length() != 0:
+                    direction = direction.normalize()
+                    self.vel = direction * self.max_speed
         else:
             # Calculate the direction vector to the target location
             direction = self.current_action - pygame.Vector2(self.rect.center)
@@ -131,8 +136,9 @@ class Agent:
                 min(max(agent_pos.x, obstacle.left), obstacle.right),
                 min(max(agent_pos.y, obstacle.top), obstacle.bottom)
             )
-            if agent_pos.distance_to(closest_point_on_obstacle) \
-                    <= self.collision_distance:
+            distance = agent_pos.distance_to(closest_point_on_obstacle)
+            if distance <= self.collision_distance:
+                self.closest_obs_point = closest_point_on_obstacle
                 return True
         return False
 

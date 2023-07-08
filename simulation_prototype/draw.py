@@ -23,6 +23,9 @@ class Draw:
         self.path_surface = create_surface(self.size)
         self.tree_surface = create_surface(self.size)
 
+        # debugging
+        self.point_surface = create_surface(self.size)
+
     def draw_everything(self):
         self.screen.fill((211, 211, 211))  # color of free space
 
@@ -43,7 +46,8 @@ class Draw:
         self.draw_path()
 
         self.draw_path_cost()
-        self.draw_collision_time()  # not relevant anymore
+        self.draw_collision_time()
+        # self.draw_obs_point()  # for debugging
 
         # self.draw_map()
         # self.draw_grid(self.size[0], 0)
@@ -100,8 +104,16 @@ class Draw:
         pygame.draw.circle(self.stopping_bounds_surface, (255, 0, 255),
                            self.agent.rect.center,
                            max(self.agent.stopping_distance, 10), 1)  # Draw a red circle with a thickness of 1 pixel
-        print(self.agent.stopping_distance)
         self.screen.blit(self.stopping_bounds_surface, (0, 0))
+
+    def draw_obs_point(self):
+        """For debugging purposes."""
+        self.point_surface.fill((0, 0, 0, 0))
+        point = self.agent.closest_obs_point
+        if point is None:
+            return
+        pygame.draw.circle(self.point_surface, pygame.Color(255, 255, 0), point, 5)
+        self.screen.blit(self.point_surface, (0, 0))
 
     def draw_map(self, x=-999, y=-999):
         """Draws the SLAM on the right half of the window."""
@@ -147,7 +159,6 @@ class Draw:
         self.screen.blit(self.grid_surface, (x, y))
 
     def draw_path(self):
-        path_length = len(self.sim.solution_path)
         if not self.sim.has_solution:
             return
         self.path_surface.fill((0, 0, 0, 0))

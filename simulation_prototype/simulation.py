@@ -71,6 +71,15 @@ class Simulation:
                     while path_copy:
                         self.agent.queue_action(path_copy.pop())
 
+    def move_agent_with_mouse(self, event):
+        """For debugging."""
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            within_x_bound = pygame.mouse.get_pos()[0] <= self.screen_size[0]
+            within_y_bound = pygame.mouse.get_pos()[1] <= self.screen_size[1]
+            if within_x_bound and within_y_bound:
+                self.agent.queue_action(event.pos)  # move agent towards mouse
+                self.agent.queue_action(event.pos)  # move agent towards mouse
+
     def run(self):
         running = True
         clock = pygame.time.Clock()
@@ -93,7 +102,7 @@ class Simulation:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False  # closes the simulation window
-
+                # self.move_agent_with_mouse(event)
                 # Path-Planning Algorithm
                 self.plan_path(event)
 
