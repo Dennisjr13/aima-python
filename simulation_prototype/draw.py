@@ -46,6 +46,8 @@ class Draw:
         self.draw_collision_time()
         # self.draw_obs_point()  # for debugging
 
+        self.draw_grid(self.size[0], 0)
+
     def draw_adj_obs(self):
         # debugging
         self.adj_obs_surface.fill((0, 0, 0, 0))

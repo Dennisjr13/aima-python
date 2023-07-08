@@ -15,7 +15,7 @@ class Simulation:
         self.env = env
 
         self.screen_size = self.env.size
-        self.window_size = (self.screen_size[0], self.screen_size[1])
+        self.window_size = (2 * self.screen_size[0], self.screen_size[1])
 
         self.agent = agent
 
@@ -24,7 +24,7 @@ class Simulation:
         self.astar_agent = AStarAgent(self)
         self.solution_path = []
 
-        self.grid = GridMap(self.agent, self.screen_size)
+        self.grid = GridMap(self)
         self.screen = pygame.display.set_mode(self.window_size)
         self.draw = Draw(self)
 

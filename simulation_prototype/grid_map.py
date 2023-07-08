@@ -3,16 +3,17 @@ from utils import bound
 
 
 class GridMap:
-    def __init__(self, agent, size, width=100, height=100):
+    def __init__(self, sim, width=100, height=100):
         """
         For example: a map with a screen size 500x500 pixels
         can be converted into a grid map with 100x100 cells,
         where each cell represents a 5x5 pixels area.
         """
 
-        self.agent = agent
+        self.agent = sim.agent
+        self.obstacles = sim.adjusted_obstacles
 
-        self.size = size  # size of map
+        self.size = sim.screen_size  # size of map
         self.width = width  # width of grid (in cells)
         self.height = height  # height of grid (in cells)
 
@@ -20,12 +21,13 @@ class GridMap:
         self.cell_height = self.size[1]/self.height
 
         # node weights corresponding to each cell status/value
-        self.UN = 0  # unexplored
-        self.FR = 1  # free space
+        self.UN = 0  # unexplored free space
+        self.EX = 1  # explored free space
         self.OB = 2  # obstacle
 
         self.graph = self.initialize_graph()
-        self.obstacle_locations = set()
+        self.add_obstacle_cells()
+
         self.goal_location = self.get_cell_idx(*self.agent.env.goal)
 
     def get_cell_idx(self, x_coordinate, y_coordinate):
@@ -53,21 +55,26 @@ class GridMap:
         """Returns the color corresponding to the status of the cell."""
         status = self.graph[i][j]
         if status == self.UN:
-            return Color(0, 0, 0, 255)
-        elif status == self.FR:
             return Color(255, 255, 255, 255)
+        elif status == self.EX:
+            return Color(0, 0, 255, 255)
         else:  # status == self.OB
             return Color(255, 0, 0, 255)
 
-    def update_cell_values(self):
-        for point in self.agent.non_obstacle_points:
-            x_idx, y_idx = self.get_cell_idx(*point)
-            self.update_cell_value(self.FR, x_idx, y_idx)
+    def add_obstacle_cells(self):
+        for obstacle in self.obstacles:
+            x, y, w, h = obstacle
+            top_left = self.get_cell_idx(x, y)
+            bottom_right = self.get_cell_idx(x + w, y + h)
+            low_x, low_y = top_left[0], top_left[1]
+            high_x, high_y = bottom_right[0], bottom_right[1]
 
-        for point in self.agent.obstacle_points:
-            x_idx, y_idx = self.get_cell_idx(*point)
-            self.update_cell_value(self.OB, x_idx, y_idx)
-            self.obstacle_locations.update((x_idx, y_idx))
+            for i in range(low_x, high_x + 1):
+                for j in range(low_y, high_y + 1):
+                    self.update_cell_value(self.OB, i, j)
+
+    def update_cell_values(self):
+        pass
 
     def update_cell_value(self, new_value, x_idx, y_idx):
         """Helper method, updates value of a single cell."""
@@ -79,6 +86,4 @@ class GridMap:
 
 # for debugging purposes
 if __name__ == '__main__':
-    gmap = GridMap((500, 500), 10, 10)
-    for row in gmap.graph:
-        print(row)
+    pass
