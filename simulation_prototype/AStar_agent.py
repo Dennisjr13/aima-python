@@ -1,3 +1,6 @@
+from math import dist
+
+
 class Node:
     def __init__(self, coordinates: tuple, parent=None):
         self.coordinates = coordinates
@@ -15,17 +18,14 @@ class AStarAgent:
 
     def __init__(self, agent):
         self.agent = agent
-        self.goal = agent.env.goal
-        self.start = self.agent.pos
-        self.screen_size = self.agent.env.size
 
         self.path_cost = 0
 
     def solve(self):
         # Create start and goal node
-        start_node = Node(self.start, None)
+        start_node = Node(self.agent.pos, None)
         start_node.g = start_node.h = start_node.f = 0
-        goal_node = Node(self.goal, None)
+        goal_node = Node(self.agent.env.goal, None)
         goal_node.g = goal_node.h = goal_node.f = 0
 
         # Initialize both the open and closed list
@@ -56,6 +56,10 @@ class AStarAgent:
                 current = current_node
                 while current is not None:
                     path.append(current.coordinates)
+                    if current.parent is not None:
+                        self.path_cost += dist((current.coordinates[0], current.coordinates[1]),
+                                               (current.parent.coordinates[0], current.parent.coordinates[1]))
+
                     current = current.parent
                 return path[::-1]  # Return reversed path
 
@@ -67,7 +71,8 @@ class AStarAgent:
                 node_position = (current_node.coordinates[0] + new_position[0], current_node.coordinates[1] + new_position[1])
 
                 # Make sure point is within range of canvas
-                if node_position[0] > self.screen_size[0] or node_position[0] < 0 or node_position[1] > self.screen_size[1] or node_position[1] < 0:
+                canvas = self.agent.env.size
+                if node_position[0] > canvas[0] or node_position[0] < 0 or node_position[1] > canvas[1] or node_position[1] < 0:
                     continue
 
                 # Make sure point is not in an obstacle
