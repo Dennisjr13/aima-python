@@ -9,7 +9,6 @@ Exit the app when you're done assigning coordinates, then give a file name.
 Information about the level will be exported as a JSON file.
 
 Left Click and Drag - create a new Rectangle obstacle
-(MAKE SURE TO DRAG IN THE DIRECTION FROM TOP-LEFT TO BOTTOM-RIGHT)
 Right Click - cycles between assigning 
 the agent's starting position and the goal's position
 
@@ -35,6 +34,21 @@ class ObstacleCreator:
         self.goal = None
         self.agent_assigned = False
 
+    def obstacle_correction(self):
+        # direction correction
+        point1 = self.current_obstacle[0]
+        point2 = self.current_obstacle[1]
+        p1x, p1y = point1[0], point1[1]
+        p2x, p2y = point2[0], point2[1]
+        if p2x > p1x and p2y > p1y:
+            return self.current_obstacle
+        elif p1x > p2x and p1y > p2y:
+            return [point2, point1]
+        elif p1x > p2x:
+            return [(p2x, p1y), (p1x, p2y)]
+        else:
+            return [(p1x, p2y), (p2x, p1y)]
+
     def run(self):
         running = True
         while running:
@@ -58,7 +72,7 @@ class ObstacleCreator:
                         # End dragging for the current rectangle
                         self.dragging = False
                         if self.current_obstacle is not None:
-                            self.obstacles.append(self.current_obstacle)
+                            self.obstacles.append(self.obstacle_correction())
                         self.current_obstacle = None
                 elif event.type == pygame.MOUSEMOTION:
                     if self.dragging:
@@ -73,16 +87,18 @@ class ObstacleCreator:
             if self.goal is not None:
                 pygame.draw.circle(self.screen, (0, 255, 0), self.goal, 5)
             for obstacle in self.obstacles:
-                pygame.draw.rect(self.screen, (0, 0, 0), pygame.Rect(*obstacle[0], *(
-                obstacle[1][0] - obstacle[0][0], obstacle[1][1] - obstacle[0][1])))
+                pygame.draw.rect(self.screen, (0, 0, 0),
+                                 pygame.Rect(*obstacle[0],
+                                             *(obstacle[1][0] - obstacle[0][0], obstacle[1][1] - obstacle[0][1])))
             if self.current_obstacle is not None:
-                pygame.draw.rect(self.screen, (0, 0, 0), pygame.Rect(*self.current_obstacle[0], *(
-                self.current_obstacle[1][0] - self.current_obstacle[0][0],
-                self.current_obstacle[1][1] - self.current_obstacle[0][1])))
+                ob = self.obstacle_correction()
+                pygame.draw.rect(self.screen, (0, 0, 0),
+                                 pygame.Rect(*ob[0], *(ob[1][0] - ob[0][0], ob[1][1] - ob[0][1])))
 
             pygame.display.flip()
 
         pygame.quit()
+
 
 def write_file(obstacle_creator):
     # Save the agent start, goal, and obstacles to a text file when the user closes the window
@@ -95,9 +111,11 @@ def write_file(obstacle_creator):
     rectangle_coordinates = []
 
     for rectangle in obstacle_creator.obstacles:
-        ls = [*rectangle[0], rectangle[1][0] - rectangle[0][0], rectangle[1][1] - rectangle[0][1]]
-        rectangle_coordinates.append(ls)
-
+        width = rectangle[1][0] - rectangle[0][0]
+        height = rectangle[1][1] - rectangle[0][1]
+        if width != 0 and height != 0:
+            ls = [*rectangle[0], width, height]
+            rectangle_coordinates.append(ls)
 
     with open(name_of_file, 'w') as file:
         json.dump({
