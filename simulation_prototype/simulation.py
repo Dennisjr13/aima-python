@@ -1,6 +1,5 @@
 import pygame
 import time
-from grid_map import GridMap
 from RRT_agent import RRTAgent
 from AStar_agent import AStarAgent
 from draw import Draw
@@ -22,7 +21,6 @@ class Simulation:
         self.astar_agent = AStarAgent(self.agent)
         self.solution_path = []
 
-        self.grid = GridMap(self.agent, self.screen_size)
         self.screen = pygame.display.set_mode(self.window_size)
         self.draw = Draw(self)
 

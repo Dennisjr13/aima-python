@@ -16,7 +16,6 @@ class Draw:
         self.obstacle_surface = create_surface(self.size)
         self.hit_box_surface = create_surface(self.size)
         self.stopping_bounds_surface = create_surface(self.size)
-        self.grid_surface = create_surface(self.size)
 
         self.path_surface = create_surface(self.size)
         self.tree_surface = create_surface(self.size)
@@ -100,40 +99,6 @@ class Draw:
         if y == -999:
             y = 0
         self.screen.blit(self.agent.map.surface, (x, y))
-
-    def draw_grid(self, x=-999, y=-999):
-        """Draws the discrete version of the map.
-        This is used for graph search."""
-        if x == -999:
-            x = 0
-        if y == -999:
-            y = self.size[1]
-
-        self.grid_surface.fill((255, 255, 255, 255))
-        grid = self.sim.grid
-
-        width = grid.cell_width
-        height = grid.cell_height
-
-        for i in range(grid.width):
-            for j in range(grid.height):
-                # fill with a color corresponding to cell status
-                color = grid.cell_color(i, j)
-                pygame.draw.rect(self.grid_surface, color,
-                                 (i*width, j*height, width, height))
-
-        # draw grid outlines
-        bt = 1  # border thickness of grid lines
-
-        for i in range(grid.width + 1):
-            pygame.draw.line(self.grid_surface, pygame.Color(0, 0, 0, 255),
-                             (i * width, 0), (i * width, self.size[1]), bt)
-
-        for j in range(grid.height + 1):
-            pygame.draw.line(self.grid_surface, pygame.Color(0, 0, 0, 255),
-                             (0, j * height), (self.size[0], j * height), bt)
-
-        self.screen.blit(self.grid_surface, (x, y))
 
     def draw_path(self):
         if not self.sim.has_solution:
