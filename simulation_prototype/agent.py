@@ -17,9 +17,6 @@ class Agent:
         # configurable settings for the agent
         self.max_speed = 10
 
-        self.view_distance = 75  # distance the agent can see
-        self.view_resolution = 720  # number of rays to cast within field of view
-
         self.path_resolution = 2  # minimum distance between points on the recorded path
         self.path_cost_so_far = 0  # keeps track of the current path cost
 
