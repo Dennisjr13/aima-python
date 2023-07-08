@@ -17,8 +17,10 @@ class Simulation:
         self.window_size = (self.screen_size[0], self.screen_size[1])
 
         self.agent = agent
-        self.rrt_agent = RRTAgent(self.agent)
-        self.astar_agent = AStarAgent(self.agent)
+
+        self.adjusted_obstacles = self.adjust_obstacles(self.agent.collision_distance)
+        self.rrt_agent = RRTAgent(self)
+        self.astar_agent = AStarAgent(self)
         self.solution_path = []
 
         self.screen = pygame.display.set_mode(self.window_size)
@@ -31,13 +33,29 @@ class Simulation:
 
         self.has_solution = False
 
+    def adjust_obstacles(self, threshold):
+        """
+        Helper method. Essentially prevents the agent from entering within
+        a certain distance from any obstacle.
+        """
+        obstacles = self.env.obstacles
+        output = []
+        for obstacle in obstacles:
+            x, y, w, h = obstacle
+            new_x = x - threshold
+            new_y = y - threshold
+            new_width = w + threshold * 2
+            new_height = h + threshold * 2
+            output.append(pygame.Rect(new_x, new_y, new_width, new_height))
+        return output
+
     def plan_path(self, event):
         """
         Change the method called below to swap algorithms.
         """
         # self.rrt_solve(event)
         # self.astar_solve(event)
-        self.general_solve(event, self.rrt_agent)
+        self.general_solve(event, self.astar_agent)
 
     def general_solve(self, event, solver_agent):
         """

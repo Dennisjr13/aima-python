@@ -16,8 +16,9 @@ class Node:
 
 class AStarAgent:
 
-    def __init__(self, agent):
-        self.agent = agent
+    def __init__(self, sim):
+        self.agent = sim.agent
+        self.obstacles = sim.adjusted_obstacles
 
         self.path_cost = 0
 
@@ -77,7 +78,7 @@ class AStarAgent:
 
                 # Make sure point is not in an obstacle
                 collide_point = False
-                for obstacle in self.agent.env.obstacles:
+                for obstacle in self.obstacles:
                     if obstacle.collidepoint(node_position):
                         collide_point = True
                 if collide_point:

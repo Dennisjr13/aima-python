@@ -3,6 +3,7 @@ from math import dist
 from random import randint
 from math import inf
 from random import random
+from utils import bound
 
 
 class Node:
@@ -19,29 +20,32 @@ class Node:
 
 class RRTAgent:
 
-    def __init__(self, agent):
-        self.agent = agent
-        self.goal = agent.env.goal
+    def __init__(self, sim):
+        # configurable settings
+        self.rate = 0.5  # how often the tree will try to expand towards the goal
+        self.distance_threshold = 20  # max distance between two nodes
+        self.goal_threshold = 10  # how close a node needs to be for the goal to be found
+        self.collision_threshold = sim.agent.collision_distance  # account for collision distance
+
+        # boilerplate
+        self.agent = sim.agent
+        self.goal = sim.agent.env.goal
         self.screen_size = self.agent.env.size
         self.root = Node(self.agent.pos)  # root of tree
+        self.obstacles = self.agent.env.obstacles
+        self.adjusted_obstacles = sim.adjusted_obstacles
 
-        self.goal_found = False
-        self.iterations = 0  # for debugging
-        self.path_cost = 0
-
-        # the distance between two nodes cannot exceed this
-        self.distance_threshold = 20  # self.agent.size*10
-
-        # how close a node needs to be to the goal for the goal
-        # to be considered found
-        self.goal_threshold = 10  # self.agent.size
-        self.last_node_added = self.root
-        self.rate = 0.5  # how often the tree will try to expand towards the goal
+        # accumulators for evaluation
+        self.iterations = 0  # number of nodes in tree
+        self.path_cost = 0  # cost of solution path
 
         # accumulators for internal methods
         self.point = None
         self.closest_node = None
         self.best_score = inf  # the lower, the better
+
+        self.last_node_added = self.root
+        self.goal_found = False
 
     def solve(self):
         while not self.goal_found:
@@ -93,7 +97,7 @@ class RRTAgent:
 
         # if there are obstacles between the closest
         # node and the randomly-chosen point, do nothing
-        for obstacle in self.agent.env.obstacles:
+        for obstacle in self.adjusted_obstacles:
             if obstacle.clipline(node_position, self.point):
                 return
 
