@@ -8,9 +8,11 @@ The app allows you to design a level with just mouse clicks.
 Exit the app when you're done assigning coordinates, then give a file name.
 Information about the level will be exported as a JSON file.
 
-Left Click and Drag - create a new Rectangle obstacle
-Right Click - cycles between assigning 
-the agent's starting position and the goal's position
+Left Click and Drag -> create a new Rectangle obstacle
+
+Right Click -> cycles between assigning the agent's starting position and the goal's position
+
+[R] -> remove the most recently added obstacle
 
 The size of screen can be adjusted in the code before you run
 the level creator app (the screen size will automatically be
@@ -78,6 +80,10 @@ class ObstacleCreator:
                     if self.dragging:
                         # Update the second point of the rectangle
                         self.current_obstacle[1] = event.pos
+                elif event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_r:
+                        if self.obstacles:
+                            self.obstacles.pop()
 
             self.screen.fill((255, 255, 255))
 
