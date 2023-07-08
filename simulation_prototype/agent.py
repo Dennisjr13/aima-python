@@ -17,12 +17,12 @@ class Agent:
         # configurable settings for the agent
         self.max_speed = 10
 
-        self.path_resolution = 2  # minimum distance between points on the recorded path
+        self.path_resolution = 3  # minimum distance between points on the recorded path
         self.path_cost_so_far = 0  # keeps track of the current path cost
 
         self.pos = pos  # position of the agent
         self.size = size  # size of the agent body
-        self.collision_distance = self.size * 2  # the agent's hit box
+        self.collision_distance = self.size  # the agent's hit box
         self.stopping_distance = self.size * 2  # to ensure that the agent slows down and doesn't overshoot
 
         # debugging
