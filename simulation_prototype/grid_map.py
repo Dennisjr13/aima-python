@@ -30,6 +30,12 @@ class GridMap:
 
         self.goal_location = self.get_cell_idx(*self.agent.env.goal)
 
+    def get_cell_value(self, x_idx, y_idx):
+        return self.graph[x_idx][y_idx]
+
+    def set_cell_value(self, new_value, x_idx, y_idx):
+        self.graph[x_idx][y_idx] = new_value
+
     def get_cell_idx(self, x_coordinate, y_coordinate):
         """
         input: map coordinates (continuous)
@@ -44,6 +50,14 @@ class GridMap:
 
         return int(x_idx), int(y_idx)
 
+    def get_center(self, x_idx, y_idx):
+        """
+        input: coordinates of a grid cell
+        output: center of the region corresponding
+        to the given cell
+        """
+        return (x_idx + 0.5) * self.cell_width, (y_idx + 0.5) * self.cell_height
+
     def initialize_graph(self):
         # graph[i][j] corresponds to the cell
         # on the ith row, jth column
@@ -53,7 +67,7 @@ class GridMap:
 
     def cell_color(self, i, j):
         """Returns the color corresponding to the status of the cell."""
-        status = self.graph[i][j]
+        status = self.get_cell_value(i, j)
         if status == self.UN:
             return Color(255, 255, 255, 255)
         elif status == self.EX:
@@ -73,13 +87,13 @@ class GridMap:
                 for j in range(low_y, high_y + 1):
                     self.update_cell_value(self.OB, i, j)
 
-    def update_cell_values(self):
-        pass
+    def is_obstacle(self, x_idx, y_idx):
+        return self.graph[x_idx][y_idx] == self.OB
 
     def update_cell_value(self, new_value, x_idx, y_idx):
         """Helper method, updates value of a single cell."""
         try:
-            self.graph[x_idx][y_idx] = new_value
+            self.set_cell_value(new_value, x_idx, y_idx)
         except:
             print(x_idx, y_idx)
 
