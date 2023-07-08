@@ -15,6 +15,8 @@ def main():
     file_name = "default_downscaled.json"
 
     parser = JSONParser(file_name)
+    # if you want to access levels from "evaluation_levels",
+    # add a second parameter "e" to the JSONParser call above
 
     obstacles = list(map(lambda x: pygame.Rect(*x), parser.obstacles))
 
