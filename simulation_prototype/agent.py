@@ -34,7 +34,6 @@ class Agent:
         self.closest_obs_point = None
 
         # knowledge base
-        self.visible_points = []  # shows what the agent currently sees
         self.path = [pos]  # keeps track of where the agent has been
         self.obstacle_points = []  # keeps track of the edges of obstacles encountered
         self.non_obstacle_points = []  # any points in visible_points that are not in obstacle_points
@@ -48,43 +47,6 @@ class Agent:
         Note: it's on the agent to not queue an action
         for a coordinate in an obstacle."""
         self.action_queue.append(pygame.Vector2(new_action))  # Set the target position
-
-    def get_field_of_view(self):
-        """Computes what the agent can see."""
-        if self.vel == 0:
-            return  # no need to recalculate the field of view when the agent is stationary
-        visible_points = []
-        for i in range(self.view_resolution):
-            # Angle of the ray
-            angle = (360 * i / self.view_resolution)
-            # Create a unit vector in the direction of the ray
-            direction = pygame.Vector2(1, 0).rotate(-angle)
-            # Scale the vector to the view distance
-            ray = direction * self.view_distance
-            # Position of the end of the ray
-            end_pos = pygame.Vector2(self.rect.center) + ray
-            # Check if the ray hits any obstacles
-            closest_intersection_point = None
-            closest_distance = float('inf')
-            for obstacle in self.env.obstacles:
-                # Calculate the intersection of the line with the obstacle
-                intersection_points = obstacle.clipline(self.rect.center, end_pos)
-                for point in intersection_points:
-                    # Calculate the distance from the agent to the intersection point
-                    distance = (pygame.Vector2(point) - pygame.Vector2(self.rect.center)).length()
-                    if distance < closest_distance:
-                        closest_distance = distance
-                        closest_intersection_point = point
-            if closest_intersection_point is None:
-                self.non_obstacle_points.append(end_pos)
-            else:
-                end_pos = pygame.Vector2(closest_intersection_point)
-                self.obstacle_points.append(end_pos)
-
-            # Store the end position of the ray
-            visible_points.append(end_pos)
-        # Store the points in the agent's field of view
-        self.visible_points = visible_points
 
     def move(self):
         """Decides how the agent should move."""

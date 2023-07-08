@@ -14,8 +14,6 @@ class Draw:
         self.agent_surface = create_surface(self.size)
         self.goal_surface = create_surface(self.size)
         self.obstacle_surface = create_surface(self.size)
-        self.fov_surface = create_surface(self.size)
-        self.fov_points_surface = create_surface(self.size)
         self.hit_box_surface = create_surface(self.size)
         self.stopping_bounds_surface = create_surface(self.size)
         self.grid_surface = create_surface(self.size)
@@ -29,15 +27,11 @@ class Draw:
     def draw_everything(self):
         self.screen.fill((211, 211, 211))  # color of free space
 
-        # self.agent.get_field_of_view()
-        # self.draw_field_of_view()
-
         self.draw_agent()
         self.draw_obstacles()
 
         self.draw_hit_box()
 
-        # self.draw_field_of_view_points()  # for debugging
         # self.draw_stopping_bounds()  # for debugging
 
         self.draw_goal()
@@ -48,9 +42,6 @@ class Draw:
         self.draw_path_cost()
         self.draw_collision_time()
         # self.draw_obs_point()  # for debugging
-
-        # self.draw_map()
-        # self.draw_grid(self.size[0], 0)
 
     def draw_agent(self):
         self.agent_surface.fill((0, 0, 0, 0))
@@ -68,20 +59,6 @@ class Draw:
         for obstacle in self.sim.env.obstacles:
             pygame.draw.rect(self.obstacle_surface, (169, 169, 169), obstacle)
         self.screen.blit(self.obstacle_surface, (0, 0))
-
-    def draw_field_of_view(self):
-        self.fov_surface.fill((0, 0, 0, 0))
-        if len(self.agent.visible_points) > 2:
-            # Draw the field of view as a polygon with transparency
-            pygame.draw.polygon(self.fov_surface, pygame.Color(255, 255, 255, 100), self.agent.visible_points)
-        self.screen.blit(self.fov_surface, (0, 0))
-
-    def draw_field_of_view_points(self):
-        """For debugging purposes."""
-        self.fov_points_surface.fill((0, 0, 0, 0))
-        for point in self.agent.visible_points:
-            pygame.draw.circle(self.fov_points_surface, pygame.Color(0, 0, 255, 255), point, 1)
-        self.screen.blit(self.fov_points_surface, (0, 0))
 
     def draw_path_cost(self):
         text = self.sim.font.render(f'Path Cost: {self.sim.agent.path_cost_so_far:.2f}', True, (0, 0, 0))
