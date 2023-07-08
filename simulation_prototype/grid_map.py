@@ -26,6 +26,7 @@ class GridMap:
 
         self.graph = self.initialize_graph()
         self.obstacle_locations = set()
+        self.goal_location = self.get_cell_idx(*self.agent.env.goal)
 
     def get_cell_idx(self, x_coordinate, y_coordinate):
         """
