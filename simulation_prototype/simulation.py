@@ -1,4 +1,5 @@
 import pygame
+import time
 from grid_map import GridMap
 from RRT_agent import RRTAgent
 from AStar_agent import AStarAgent
@@ -36,40 +37,31 @@ class Simulation:
         """
         Change the method called below to swap algorithms.
         """
-        self.rrt_solve(event)
+        # self.rrt_solve(event)
         # self.astar_solve(event)
+        self.general_solve(event, self.rrt_agent)
 
-    def rrt_solve(self, event):
+    def general_solve(self, event, solver_agent):
         """
-        Plans a path from start to goal using RRT.
+        Plans a path from start to goal using the given solver_agent.
         Press [S] to solve. Press [M] to move the agent along the path.
+
+        NOTE: solver_agent MUST have
+            1.) a .solve() method that returns
+                a solution path (a stack of coordinates
+                where the starting coordinates of the agent is on top of the stack)
+            2.) a .path_cost attribute that keeps track of the path cost of the
+                returned solution
         """
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_s:  # press [S] to solve
                 if not self.has_solution:
                     print("Solving...")
-                    self.solution_path = self.rrt_agent.solve()
-                    print(f"Solved! Found with path cost {self.rrt_agent.path_cost:2f}")
-                    self.has_solution = True
-            if event.key == pygame.K_m:  # press [M] to move agent along the path
-                if self.has_solution:
-                    print("Moving...")
-                    path_copy = deepcopy(self.solution_path)
-                    path_copy.pop()  # remove the starting position
-                    while path_copy:
-                        self.agent.queue_action(path_copy.pop())
-
-    def astar_solve(self, event):
-        """
-        Plans a path from start to goal using A*.
-        Press [S] to solve. Press [M] to move the agent along the path.
-        """
-        if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_s:  # press [S] to solve
-                if not self.has_solution:
-                    print("Solving...")
-                    self.solution_path = self.astar_agent.solve()
-                    print(f"Solved! Found with path cost {self.astar_agent.path_cost:2f}")  # FIXME
+                    initial_time = time.time()
+                    self.solution_path = solver_agent.solve()
+                    final_time = time.time()
+                    elapsed_time = final_time - initial_time  # in seconds
+                    print(f"Solved! It took {elapsed_time} seconds to find a path with cost {solver_agent.path_cost:2f}")
                     self.has_solution = True
             if event.key == pygame.K_m:  # press [M] to move agent along the path
                 if self.has_solution:
@@ -82,6 +74,7 @@ class Simulation:
     def run(self):
         running = True
         clock = pygame.time.Clock()
+        displayed_found = False
 
         while running:
             # draws things
@@ -92,6 +85,9 @@ class Simulation:
             goal_threshold = self.agent.size * 2
             if dist_from_goal < goal_threshold:
                 self.agent.goal_found = True
+                if not displayed_found:
+                    print("Found!")
+                    displayed_found = True
 
             # mouseclick events
             for event in pygame.event.get():
