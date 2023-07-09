@@ -1,4 +1,5 @@
 import pygame
+import csv
 
 
 def create_surface(surface_size):
@@ -13,3 +14,12 @@ def bound(value, lower_bound, upper_bound):
         return upper_bound
     else:
         return value
+
+
+def append_to_csv(filename, data):
+    # Open the file in append mode
+    with open(filename, 'a') as f:
+        # Create a csv writer
+        writer = csv.writer(f)
+        # Write the data
+        writer.writerow(data)

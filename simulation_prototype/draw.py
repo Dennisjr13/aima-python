@@ -33,7 +33,7 @@ class Draw:
         self.draw_agent()
         self.draw_obstacles()
 
-        self.draw_hit_box()
+        # self.draw_hit_box()
 
         # self.draw_stopping_bounds()  # for debugging
 

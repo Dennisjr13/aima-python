@@ -5,7 +5,7 @@ from RRT_agent import RRTAgent
 from AStar_agent import AStarAgent
 from draw import Draw
 from math import dist
-from copy import deepcopy
+from utils import append_to_csv
 
 
 class Simulation:
@@ -15,8 +15,9 @@ class Simulation:
         pygame.display.set_caption(file_name)
         self.env = env
 
+        self.file_name = file_name
         self.screen_size = self.env.size
-        self.window_size = (2 * self.screen_size[0], self.screen_size[1])
+        self.window_size = (self.screen_size[0], self.screen_size[1])
 
         self.agent = agent
 
@@ -52,12 +53,74 @@ class Simulation:
             output.append(pygame.Rect(new_x, new_y, new_width, new_height))
         return output
 
+    def rrt_experiment(self, event):
+        """
+        Not needed for simulation to run.
+
+        Automates the data collection process.
+        Outputs both raw and aggregate data.
+        """
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_s:  # press [S] to solve
+                if self.has_solution:
+                    return
+
+                csv_name = self.file_name + ".csv"
+
+                headers = ['Trial No.', 'Distance Threshold', 'Rate', 'Path Cost', 'Iterations', 'Time Cost']
+                append_to_csv(csv_name, headers)
+
+                thresholds = [10, 50, 100]
+                rates = [0, 0.25, 0.5, 0.75]
+
+                trials = 30
+
+                for t in thresholds:
+                    for r in rates:
+                        print(f"Threshold: {t}, Rate: {r}")
+                        total_p = total_i = total_time = 0
+                        for trial_number in range(1, trials + 1):
+                            path_cost, iterations, time_cost = self.rrt_trial(trial_number, t, r, csv_name)
+                            total_p += path_cost
+                            total_i += iterations
+                            total_time += time_cost
+                        avg_p = total_p/trials
+                        avg_i = total_i/trials
+                        avg_t = total_time/trials
+
+                        summarized_data = [self.file_name, t, r, avg_p, avg_i, avg_t]
+                        # append_to_csv("RRT Experimental Data/rrt_summary.csv", summarized_data)
+                        # disabled, it has served its purpose
+                self.has_solution = True
+                print("Done.")
+
+    def rrt_trial(self, trial_number, distance_threshold, rate, file_name):
+        """
+        Not needed for simulation to run.
+
+        Helper method for experiment data collection.
+        """
+        # Test the function
+        path_agent = RRTAgent(self)
+        initial_time = time.time()
+        self.solution_path = path_agent.solve()
+        final_time = time.time()
+
+        time_cost = final_time - initial_time  # in seconds
+        path_cost = path_agent.path_cost
+        iterations = path_agent.iterations
+
+        data = [trial_number, distance_threshold, rate, path_cost, iterations, time_cost]
+        append_to_csv(file_name, data)
+        return path_cost, iterations, time_cost
+
     def plan_path(self, event):
         """
         Change the method called below to swap algorithms.
         """
         # self.general_solve(event, self.astar_agent)
         self.general_solve(event, self.rrt_agent, reverse=True)
+        # self.rrt_experiment(event)  # do not use this
 
     def general_solve(self, event, solver_agent, reverse=False):
         """
@@ -79,7 +142,8 @@ class Simulation:
                     self.solution_path = solver_agent.solve()
                     final_time = time.time()
                     elapsed_time = final_time - initial_time  # in seconds
-                    print(f"Solved! It took {elapsed_time} seconds to find a path with cost {solver_agent.path_cost:2f}")
+                    print(f"Solved! It took {elapsed_time} seconds to find "
+                          f"a path with cost {solver_agent.path_cost:2f}")
                     if reverse:
                         self.solution_path.reverse()
                     self.has_solution = True
