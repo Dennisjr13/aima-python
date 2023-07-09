@@ -1,6 +1,5 @@
+import heapq
 from math import dist
-
-from simulation_prototype.grid_map import GridMap
 
 
 class Node:
@@ -23,7 +22,8 @@ class AStarAgent:
         self.grid_map = sim.grid
         # self.grid_map = GridMap(sim, 50, 50)
         self.obstacles = sim.inflated_obstacles
-        self.max_iterations = self.grid_map.width * self.grid_map.height // 2
+        # self.max_iterations = self.grid_map.width * self.grid_map.height
+        self.max_iterations = 10**6  # TODO: pick a reasonable value for this
 
         self.adjacent_nodes = ((0, -1), (0, 1), (-1, 0), (1, 0))
         if allow_diagonal_movement:
@@ -43,7 +43,8 @@ class AStarAgent:
         closed_list = []
 
         # Add the initial start node
-        open_list.append(start_node)
+        heapq.heapify(open_list)
+        heapq.heappush(open_list, start_node)
 
         # Loop until you find the end or reach max_iterations
         iterations = 0
@@ -77,7 +78,7 @@ class AStarAgent:
 
                 # Get node position
                 node_position = (
-                current_node.coordinates[0] + new_position[0], current_node.coordinates[1] + new_position[1])
+                    current_node.coordinates[0] + new_position[0], current_node.coordinates[1] + new_position[1])
 
                 # Make sure point is within range of canvas
                 canvas = self.agent.env.size
@@ -104,15 +105,15 @@ class AStarAgent:
                         continue
 
                 # Create the f, g, and h values
-                child.g = current_node.g + 1
-                child.h = ((child.coordinates[0] - goal_node.coordinates[0]) ** 2) + (
-                            (child.coordinates[1] - goal_node.coordinates[1]) ** 2)
+                child.g = current_node.g + (((child.coordinates[0] - child.parent.coordinates[0]) ** 2) + (
+                        (child.coordinates[1] - child.parent.coordinates[1]) ** 2)) ** 0.5
+                child.h = (((child.coordinates[0] - goal_node.coordinates[0]) ** 2) + (
+                        (child.coordinates[1] - goal_node.coordinates[1]) ** 2)) ** 0.5
                 child.f = child.g + child.h
 
                 # Check if child is already on the open list
-                for open_node in open_list:
-                    if child == open_node and child.g > open_node.g:
-                        continue
+                if self.child_in_open_list(child, open_list):
+                    continue
 
                 # Add the child to the open list
                 open_list.append(child)
@@ -135,6 +136,24 @@ class AStarAgent:
 
             current = current.parent
         return path[::-1]  # Return reversed path
+
+    def child_in_open_list(self, child, open_list):
+        index = None
+        for i in range(0, len(open_list)):
+            if child == open_list[i]:
+                index = i
+                break
+
+        if index:
+            if child.g >= open_list[index].g:
+                return True
+            else:
+                open_list[index] = open_list[-1]
+                open_list.pop()
+                if index < len(open_list):
+                    heapq._siftup(open_list, index)
+                    heapq._siftdown(open_list, 0, index)
+        return False
 
 
 # for debugging purposes
