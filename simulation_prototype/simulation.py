@@ -20,11 +20,11 @@ class Simulation:
         self.agent = agent
 
         self.adjusted_obstacles = self.adjust_obstacles(self.agent.collision_distance)
+        self.grid = GridMap(self)
         self.rrt_agent = RRTAgent(self)
         self.astar_agent = AStarAgent(self)
         self.solution_path = []
 
-        self.grid = GridMap(self)
         self.screen = pygame.display.set_mode(self.window_size)
         self.draw = Draw(self)
 

@@ -1,5 +1,7 @@
 from math import dist
 
+from simulation_prototype.grid_map import GridMap
+
 
 class Node:
     def __init__(self, coordinates: tuple, parent=None):
@@ -18,15 +20,17 @@ class AStarAgent:
 
     def __init__(self, sim):
         self.agent = sim.agent
+        self.grid_map = sim.grid
+        #self.grid_map = GridMap(sim, 50, 50)
         self.obstacles = sim.adjusted_obstacles
 
         self.path_cost = 0
 
     def solve(self):
         # Create start and goal node
-        start_node = Node(self.agent.pos, None)
+        start_node = Node(self.grid_map.get_cell_idx(*self.agent.pos), None)
         start_node.g = start_node.h = start_node.f = 0
-        goal_node = Node(self.agent.env.goal, None)
+        goal_node = Node(self.grid_map.goal_location, None)
         goal_node.g = goal_node.h = goal_node.f = 0
 
         # Initialize both the open and closed list
@@ -52,14 +56,18 @@ class AStarAgent:
             closed_list.append(current_node)
 
             # Found the goal
-            if current_node == goal_node:
+            if self.grid_map.is_goal(current_node.coordinates[0], current_node.coordinates[1]):
                 path = []
                 current = current_node
                 while current is not None:
-                    path.append(current.coordinates)
+                    cur_coords = self.grid_map.get_center(current.coordinates[0],
+                                                          current.coordinates[1])
+                    path.append(cur_coords)
                     if current.parent is not None:
-                        self.path_cost += dist((current.coordinates[0], current.coordinates[1]),
-                                               (current.parent.coordinates[0], current.parent.coordinates[1]))
+                        par_coords = self.grid_map.get_center(current.parent.coordinates[0],
+                                                              current.parent.coordinates[1])
+                        self.path_cost += dist((cur_coords[0], cur_coords[1]),
+                                               (par_coords[0], par_coords[1]))
 
                     current = current.parent
                 return path[::-1]  # Return reversed path
@@ -73,15 +81,11 @@ class AStarAgent:
 
                 # Make sure point is within range of canvas
                 canvas = self.agent.env.size
-                if node_position[0] > canvas[0] or node_position[0] < 0 or node_position[1] > canvas[1] or node_position[1] < 0:
+                if node_position[0] > self.grid_map.width or node_position[0] < 0 or node_position[1] > self.grid_map.height or node_position[1] < 0:
                     continue
 
                 # Make sure point is not in an obstacle
-                collide_point = False
-                for obstacle in self.obstacles:
-                    if obstacle.collidepoint(node_position):
-                        collide_point = True
-                if collide_point:
+                if self.grid_map.is_obstacle(node_position[0], node_position[1]):
                     continue
 
                 # Create new node
