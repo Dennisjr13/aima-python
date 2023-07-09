@@ -3,6 +3,7 @@ from math import dist
 
 
 class Node:
+    """ A node class for A-Star Pathfinding """
     def __init__(self, coordinates: tuple, parent=None):
         self.coordinates = coordinates
         self.parent = parent
@@ -24,7 +25,7 @@ class Node:
 
 
 class AStarAgent:
-
+    """ An agent class for A-Star Pathfinding """
     def __init__(self, sim, allow_diagonal_movement=False):
         self.agent = sim.agent
         self.grid_map = sim.grid
@@ -37,6 +38,10 @@ class AStarAgent:
         if allow_diagonal_movement:
             self.adjacent_nodes = ((0, -1), (0, 1), (-1, 0), (1, 0), (-1, -1), (-1, 1), (1, -1), (1, 1))
 
+        # Initialize both the open and closed list
+        self.open_list = []
+        self.closed_list = []
+
         self.path_cost = 0
 
     def solve(self):
@@ -46,17 +51,13 @@ class AStarAgent:
         goal_node = Node(self.grid_map.goal_location, None)
         goal_node.g = goal_node.h = goal_node.f = 0
 
-        # Initialize both the open and closed list
-        open_list = []
-        closed_list = []
-
         # Add the initial start node
-        heapq.heapify(open_list)
-        heapq.heappush(open_list, start_node)
+        heapq.heapify(self.open_list)
+        heapq.heappush(self.open_list, start_node)
 
         # Loop until you find the end or reach max_iterations
         iterations = 0
-        while len(open_list) > 0:
+        while len(self.open_list) > 0:
             iterations += 1
 
             if iterations > self.max_iterations:
@@ -65,22 +66,22 @@ class AStarAgent:
                 return self.build_path(current_node)
 
             # Get the current node
-            current_node = open_list[0]
+            current_node = self.open_list[0]
             current_index = 0
-            for index, item in enumerate(open_list):
+            for index, item in enumerate(self.open_list):
                 if item.f < current_node.f:
                     current_node = item
                     current_index = index
 
             # Pop current off open list, add to closed list
-            open_list.pop(current_index)
-            closed_list.append(current_node)
+            self.open_list.pop(current_index)
+            self.closed_list.append(current_node)
 
             # Found the goal
             if self.grid_map.is_goal(current_node.coordinates[0], current_node.coordinates[1]):
                 return self.build_path(current_node)
 
-            # Generate children with adjacent squares
+            # Generate children
             children = []
             for new_position in self.adjacent_nodes:
 
@@ -89,7 +90,6 @@ class AStarAgent:
                     current_node.coordinates[0] + new_position[0], current_node.coordinates[1] + new_position[1])
 
                 # Make sure point is within range of canvas
-                canvas = self.agent.env.size
                 if node_position[0] > self.grid_map.width or node_position[0] < 0 or node_position[
                     1] > self.grid_map.height or node_position[1] < 0:
                     continue
@@ -108,7 +108,7 @@ class AStarAgent:
             for child in children:
 
                 # Check if child is on the closed list
-                for closed_child in closed_list:
+                for closed_child in self.closed_list:
                     if child == closed_child:
                         continue
 
@@ -120,11 +120,11 @@ class AStarAgent:
                 child.f = child.g + child.h
 
                 # Check if child is already on the open list
-                if self.child_in_open_list(child, open_list):
+                if self.child_in_open_list(child):
                     continue
 
                 # Add the child to the open list
-                open_list.append(child)
+                heapq.heappush(self.open_list, child)
                 self.grid_map.set_cell_value(1, child.coordinates[0], child.coordinates[1])
 
         print("Couldn't get a path to destination")
@@ -145,22 +145,15 @@ class AStarAgent:
             current = current.parent
         return path[::-1]  # Return reversed path
 
-    def child_in_open_list(self, child, open_list):
-        index = None
-        for i in range(0, len(open_list)):
-            if child == open_list[i]:
-                index = i
-                break
-
-        if index:
-            if child.g >= open_list[index].g:
-                return True
-            else:
-                open_list[index] = open_list[-1]
-                open_list.pop()
-                if index < len(open_list):
-                    heapq._siftup(open_list, index)
-                    heapq._siftdown(open_list, 0, index)
+    def child_in_open_list(self, child):
+        if child in self.open_list:
+            index = self.open_list.index(child)
+            if child.g < self.open_list[index].g:
+                # update the nodes values
+                self.open_list[index].g = child.g
+                self.open_list[index].f = child.f
+                self.open_list[index].h = child.h
+            return True
         return False
 
 
