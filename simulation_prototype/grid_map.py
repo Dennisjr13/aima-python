@@ -1,6 +1,15 @@
 from pygame import Color
 from utils import bound
 
+"""
+API for A* Search
+
+get_cell_idx()
+is_goal()
+is_obstacle()
+get_center()
+graph()
+"""
 
 class GridMap:
     def __init__(self, sim, width=100, height=100):
@@ -10,25 +19,24 @@ class GridMap:
         where each cell represents a 5x5 pixels area.
         """
 
+        # boilerplate
         self.agent = sim.agent
         self.obstacles = sim.adjusted_obstacles
-
         self.size = sim.screen_size  # size of map
         self.width = width  # width of grid (in cells)
         self.height = height  # height of grid (in cells)
 
         self.cell_width = self.size[0]/self.width
         self.cell_height = self.size[1]/self.height
+        self.graph = self.initialize_graph()
+        self.goal_location = self.get_cell_idx(*self.agent.env.goal)
 
         # node weights corresponding to each cell status/value
         self.UN = 0  # unexplored free space
         self.EX = 1  # explored free space
         self.OB = 2  # obstacle
 
-        self.graph = self.initialize_graph()
         self.add_obstacle_cells()
-
-        self.goal_location = self.get_cell_idx(*self.agent.env.goal)
 
     def get_cell_value(self, x_idx, y_idx):
         return self.graph[x_idx][y_idx]
@@ -58,7 +66,22 @@ class GridMap:
         """
         return (x_idx + 0.5) * self.cell_width, (y_idx + 0.5) * self.cell_height
 
+    def is_goal(self, x_idx, y_idx):
+        """Returns whether the given cell has the goal."""
+        goal_x, goal_y = self.goal_location[0], self.goal_location[1]
+        return x_idx == goal_x and y_idx == goal_y
+
+    def is_obstacle(self, x_idx, y_idx):
+        """
+        Returns whether the corresponding grid cell has an obstacle.
+        """
+        return self.get_cell_value(x_idx, y_idx) == self.OB
+
+    def graph(self):
+        return self.graph
+
     def initialize_graph(self):
+        """Internal helper method."""
         # graph[i][j] corresponds to the cell
         # on the ith row, jth column
         graph = [[self.UN for _ in range(self.height)]
@@ -66,7 +89,10 @@ class GridMap:
         return graph
 
     def cell_color(self, i, j):
-        """Returns the color corresponding to the status of the cell."""
+        """
+        Helper for drawing the grid.
+        Returns the color corresponding to the status of the cell.
+        """
         status = self.get_cell_value(i, j)
         if status == self.UN:
             return Color(255, 255, 255, 255)
@@ -76,6 +102,9 @@ class GridMap:
             return Color(255, 0, 0, 255)
 
     def add_obstacle_cells(self):
+        """
+        Internal helper method.
+        """
         for obstacle in self.obstacles:
             x, y, w, h = obstacle
             top_left = self.get_cell_idx(x, y)
@@ -85,17 +114,7 @@ class GridMap:
 
             for i in range(low_x, high_x + 1):
                 for j in range(low_y, high_y + 1):
-                    self.update_cell_value(self.OB, i, j)
-
-    def is_obstacle(self, x_idx, y_idx):
-        return self.graph[x_idx][y_idx] == self.OB
-
-    def update_cell_value(self, new_value, x_idx, y_idx):
-        """Helper method, updates value of a single cell."""
-        try:
-            self.set_cell_value(new_value, x_idx, y_idx)
-        except:
-            print(x_idx, y_idx)
+                    self.set_cell_value(self.OB, i, j)
 
 
 # for debugging purposes
