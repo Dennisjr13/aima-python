@@ -52,6 +52,7 @@ class RRTAgent:
             self.next_move()
             last_node = self.last_node_added
             self.is_goal_reached((last_node.x, last_node.y))
+        print(f"Number of nodes on tree: {self.iterations}.")
         return self.build_path()
 
     def next_move(self):

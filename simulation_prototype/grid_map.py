@@ -13,7 +13,7 @@ graph()
 
 
 class GridMap:
-    def __init__(self, sim, width=100, height=100):
+    def __init__(self, sim, width=20, height=20):
         """
         For example: a map with a screen size 500x500 pixels
         can be converted into a grid map with 100x100 cells,
@@ -37,6 +37,7 @@ class GridMap:
         self.cell_height = self.size[1]/self.height
         self.graph = self.initialize_graph()
         self.goal_location = self.get_cell_idx(*self.agent.env.goal)
+        self.agent_location = self.get_cell_idx(*self.agent.pos)
 
         self.add_obstacle_cells()
 
@@ -68,6 +69,10 @@ class GridMap:
         """
         return (x_idx + 0.5) * self.cell_width, (y_idx + 0.5) * self.cell_height
 
+    def is_agent(self, x_idx, y_idx):
+        agent_x, agent_y = self.get_cell_idx(*self.agent.pos)
+        return x_idx == agent_x and y_idx == agent_y
+
     def is_goal(self, x_idx, y_idx):
         """Returns whether the given cell has the goal."""
         goal_x, goal_y = self.goal_location[0], self.goal_location[1]
@@ -96,6 +101,13 @@ class GridMap:
         Returns the color corresponding to the status of the cell.
         """
         status = self.get_cell_value(i, j)
+
+        if self.is_agent(i, j):
+            return Color(0, 0, 255, 255)
+
+        if self.is_goal(i, j):
+            return Color(0, 255, 0, 255)
+
         if status == self.UN:
             return Color(255, 255, 255, 255)
         elif status == self.EX:

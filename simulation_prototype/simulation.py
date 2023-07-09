@@ -55,11 +55,10 @@ class Simulation:
         """
         Change the method called below to swap algorithms.
         """
-        # self.rrt_solve(event)
-        # self.astar_solve(event)
         self.general_solve(event, self.astar_agent)
+        # self.general_solve(event, self.rrt_agent, reverse=True)
 
-    def general_solve(self, event, solver_agent):
+    def general_solve(self, event, solver_agent, reverse=False):
         """
         Plans a path from start to goal using the given solver_agent.
         Press [S] to solve. Press [M] to move the agent along the path.
@@ -80,14 +79,14 @@ class Simulation:
                     final_time = time.time()
                     elapsed_time = final_time - initial_time  # in seconds
                     print(f"Solved! It took {elapsed_time} seconds to find a path with cost {solver_agent.path_cost:2f}")
+                    if reverse:
+                        self.solution_path.reverse()
                     self.has_solution = True
             if event.key == pygame.K_m:  # press [M] to move agent along the path
                 if self.has_solution:
                     print("Moving...")
-                    path_copy = deepcopy(self.solution_path)
-                    path_copy.pop()  # remove the starting position
-                    while path_copy:
-                        self.agent.queue_action(path_copy.pop())
+                    for action in self.solution_path:
+                        self.agent.queue_action(action)
 
     def move_agent_with_mouse(self, event):
         """For debugging."""

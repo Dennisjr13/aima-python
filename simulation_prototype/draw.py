@@ -145,6 +145,7 @@ class Draw:
         self.path_surface.fill((0, 0, 0, 0))
 
         path_copy = deepcopy(self.sim.solution_path)
+        path_copy.reverse()
         previous = path_copy.pop()
         while path_copy:
             current = path_copy.pop()
