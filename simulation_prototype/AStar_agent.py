@@ -22,7 +22,7 @@ class AStarAgent:
         self.agent = sim.agent
         self.grid_map = sim.grid
         #self.grid_map = GridMap(sim, 50, 50)
-        self.obstacles = sim.adjusted_obstacles
+        self.obstacles = sim.inflated_obstacles
 
         self.path_cost = 0
 

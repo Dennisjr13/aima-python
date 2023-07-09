@@ -22,7 +22,7 @@ class GridMap:
 
         # boilerplate
         self.agent = sim.agent
-        self.obstacles = sim.adjusted_obstacles
+        self.obstacles = sim.inflated_obstacles
         self.size = sim.screen_size  # size of map
         self.width = width  # width of grid (in cells)
         self.height = height  # height of grid (in cells)

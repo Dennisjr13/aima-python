@@ -23,12 +23,12 @@ class Draw:
 
         # debugging
         self.point_surface = create_surface(self.size)
-        self.adj_obs_surface = create_surface(self.size)
+        self.inflated_obstacles_surface = create_surface(self.size)
 
     def draw_everything(self):
         self.screen.fill((211, 211, 211))  # color of free space
 
-        self.draw_adj_obs()
+        self.draw_inflated_obstacles()  # for debugging
 
         self.draw_agent()
         self.draw_obstacles()
@@ -42,19 +42,19 @@ class Draw:
         self.draw_tree()
         self.draw_path()
 
-        self.draw_path_cost()
-        self.draw_collision_time()
+        # self.draw_path_cost()
+        # self.draw_collision_time()
         # self.draw_obs_point()  # for debugging
 
         self.draw_grid(self.size[0], 0)
 
-    def draw_adj_obs(self):
+    def draw_inflated_obstacles(self):
         # debugging
-        self.adj_obs_surface.fill((0, 0, 0, 0))
+        self.inflated_obstacles_surface.fill((0, 0, 0, 0))
         color = (255, 0, 0, 100)
-        for obstacle in self.sim.adjusted_obstacles:
-            pygame.draw.rect(self.adj_obs_surface, color, obstacle)
-        self.screen.blit(self.adj_obs_surface, (0, 0))
+        for obstacle in self.sim.inflated_obstacles:
+            pygame.draw.rect(self.inflated_obstacles_surface, color, obstacle)
+        self.screen.blit(self.inflated_obstacles_surface, (0, 0))
 
     def draw_agent(self):
         self.agent_surface.fill((0, 0, 0, 0))
@@ -64,7 +64,7 @@ class Draw:
 
     def draw_goal(self):
         self.goal_surface.fill((0, 0, 0, 0))
-        pygame.draw.circle(self.goal_surface, (0, 255, 0), self.sim.env.goal, 5)
+        pygame.draw.circle(self.goal_surface, (0, 180, 0), self.sim.env.goal, 5)
         self.screen.blit(self.goal_surface, (0, 0))
 
     def draw_obstacles(self):

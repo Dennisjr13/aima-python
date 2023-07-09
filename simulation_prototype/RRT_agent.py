@@ -32,8 +32,7 @@ class RRTAgent:
         self.goal = sim.agent.env.goal
         self.screen_size = self.agent.env.size
         self.root = Node(self.agent.pos)  # root of tree
-        self.obstacles = self.agent.env.obstacles
-        self.adjusted_obstacles = sim.adjusted_obstacles
+        self.obstacles = sim.inflated_obstacles
 
         # accumulators for evaluation
         self.iterations = 0  # number of nodes in tree
@@ -98,7 +97,7 @@ class RRTAgent:
 
         # if there are obstacles between the closest
         # node and the randomly-chosen point, do nothing
-        for obstacle in self.adjusted_obstacles:
+        for obstacle in self.obstacles:
             if obstacle.clipline(node_position, self.point):
                 return
 

@@ -9,9 +9,10 @@ from copy import deepcopy
 
 
 class Simulation:
-    def __init__(self, env, agent):
+    def __init__(self, env, agent, file_name):
         # boilerplate
         pygame.init()
+        pygame.display.set_caption(file_name)
         self.env = env
 
         self.screen_size = self.env.size
@@ -19,7 +20,7 @@ class Simulation:
 
         self.agent = agent
 
-        self.adjusted_obstacles = self.adjust_obstacles(self.agent.collision_distance)
+        self.inflated_obstacles = self.inflate_obstacles(self.agent.collision_distance)
         self.grid = GridMap(self)
         self.rrt_agent = RRTAgent(self)
         self.astar_agent = AStarAgent(self)
@@ -35,7 +36,7 @@ class Simulation:
 
         self.has_solution = False
 
-    def adjust_obstacles(self, threshold):
+    def inflate_obstacles(self, threshold):
         """
         Helper method. Essentially prevents the agent from entering within
         a certain distance from any obstacle.
@@ -55,8 +56,8 @@ class Simulation:
         """
         Change the method called below to swap algorithms.
         """
-        self.general_solve(event, self.astar_agent)
-        # self.general_solve(event, self.rrt_agent, reverse=True)
+        # self.general_solve(event, self.astar_agent)
+        self.general_solve(event, self.rrt_agent, reverse=True)
 
     def general_solve(self, event, solver_agent, reverse=False):
         """
