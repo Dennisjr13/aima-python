@@ -23,7 +23,7 @@ class RRTAgent:
     def __init__(self, sim):
         # configurable settings
         self.rate = 0.5  # how often the tree will try to expand towards the goal
-        self.distance_threshold = 20  # max distance between two nodes
+        self.distance_threshold = 10  # max distance between two nodes
         self.goal_threshold = 10  # how close a node needs to be for the goal to be found
         self.collision_threshold = sim.agent.collision_distance  # account for collision distance
 
@@ -46,12 +46,17 @@ class RRTAgent:
         self.last_node_added = self.root
         self.goal_found = False
 
-    def solve(self):
+    def solve(self, dist_threshold=20, rate=0.5):
+        # for experimenting purposes
+        self.distance_threshold = dist_threshold
+        self.rate = rate
+
+        # the actual algorithm
         while not self.goal_found:
             self.next_move()
             last_node = self.last_node_added
             self.is_goal_reached((last_node.x, last_node.y))
-        print(f"Number of nodes on tree: {self.iterations}.")
+        # print(f"Number of nodes on tree: {self.iterations}.")
         return self.build_path()
 
     def next_move(self):
