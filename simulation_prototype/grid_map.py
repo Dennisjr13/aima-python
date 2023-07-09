@@ -11,6 +11,7 @@ get_center()
 graph()
 """
 
+
 class GridMap:
     def __init__(self, sim, width=100, height=100):
         """
@@ -26,15 +27,16 @@ class GridMap:
         self.width = width  # width of grid (in cells)
         self.height = height  # height of grid (in cells)
 
-        self.cell_width = self.size[0]/self.width
-        self.cell_height = self.size[1]/self.height
-        self.graph = self.initialize_graph()
-        self.goal_location = self.get_cell_idx(*self.agent.env.goal)
-
         # node weights corresponding to each cell status/value
         self.UN = 0  # unexplored free space
         self.EX = 1  # explored free space
         self.OB = 2  # obstacle
+
+        # boilerplate
+        self.cell_width = self.size[0]/self.width
+        self.cell_height = self.size[1]/self.height
+        self.graph = self.initialize_graph()
+        self.goal_location = self.get_cell_idx(*self.agent.env.goal)
 
         self.add_obstacle_cells()
 
