@@ -21,7 +21,7 @@ class Simulation:
         self.agent = agent
 
         self.inflated_obstacles = self.inflate_obstacles(self.agent.collision_distance)
-        self.grid = GridMap(self)
+        self.grid = GridMap(self, 40, 40)
         self.rrt_agent = RRTAgent(self)
         self.astar_agent = AStarAgent(self)
         self.solution_path = []
