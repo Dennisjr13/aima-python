@@ -14,6 +14,14 @@ class Node:
     def __eq__(self, other):
         return self.coordinates == other.coordinates
 
+    # for heap queue
+    def __lt__(self, other):
+        return self.f < other.f
+
+    # for heap queue
+    def __gt__(self, other):
+        return self.f > other.f
+
 
 class AStarAgent:
 
