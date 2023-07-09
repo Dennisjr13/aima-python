@@ -192,12 +192,18 @@ def main(win, width):
     run = True
     started = False
     draw(win, grid, ROWS, width)
+    success = False
     while run:
         font = pygame.font.Font(None, 36)
         text = font.render(f"Path Cost: {pathcost}", 1, (10, 10, 10))
         win.blit(text, (10, 10))
         pygame.display.flip()
 
+        if success == True:
+            font = pygame.font.Font(None, 36)
+            text = font.render("Target Found", 1, (255, 0, 0))
+            win.blit(text, (300, 10))
+            pygame.display.flip()
 
         for event in pygame.event.get():
 
@@ -245,6 +251,7 @@ def main(win, width):
                     start = None
                     end = None
                     grid = make_grid(ROWS, width)
+                    success = False
                 draw(win, grid, ROWS, width)
 
     pygame.quit()
