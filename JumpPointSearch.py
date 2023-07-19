@@ -91,14 +91,15 @@ def h(p1, p2):
     return abs(x1 - x2) + abs(y1 - y2)
 
 def reconstruct_path(came_from, current, draw):
-    pathcost = 0
     while current in came_from:
+        #print(f"Current: {current}, Came From: {came_from[current]}")
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
         current = came_from[current]
         current.make_path()
         draw()
-        pathcost += 1
-    print("The path cost is: "+ str(pathcost))
-    return pathcost
+
 
 def algorithm(draw, grid, start, end):
     count = 0
@@ -109,7 +110,6 @@ def algorithm(draw, grid, start, end):
     g_score[start] = 0
     f_score = {node: float("inf") for row in grid for node in row}
     f_score[start] = h(start.get_pos(), end.get_pos())
-
     open_set_hash = {start}
 
     while not open_set.empty():
@@ -145,6 +145,102 @@ def algorithm(draw, grid, start, end):
 
     return False,0
 
+def get_end_direction(start,end):
+    dx = end[0] - start[0]
+    dy = end[1] - start[1]
+
+    direction = []
+    if dx < 0:
+        direction.append("right")
+    elif dx > 0:
+        direction.append("left")
+
+    if dy < 0:
+        direction.append("down")
+    elif dy > 0:
+        direction.append("up")
+
+    direction = '-'.join(direction)
+
+    if direction == "right-down":
+        directions = ((1,1),(0,1),(1,0),(0,-1),(-1,0))
+        return directions, direction
+    elif direction == "right-up":
+        directions = ((-1,1),(0,1),(1,0),(0,-1),(-1,0))
+        return directions, direction
+    elif direction == "left-up":
+        directions = ((-1,-1),(0,1),(1,0),(0,-1),(-1,0))
+        return directions, direction
+    elif direction == "left-down":
+        directions = ((1,-1),(0,1),(1,0),(0,-1),(-1,0))
+        return directions, direction
+    else:
+        return None
+
+
+def Jump_Point_Search(draw, grid, start, end):
+    count = 0
+    open_set = PriorityQueue()
+    open_set.put((0, count, start))
+    came_from = {}
+    g_score = {node: float("inf") for row in grid for node in row}
+    g_score[start] = 0
+    f_score = {node: float("inf") for row in grid for node in row}
+    f_score[start] = h(start.get_pos(), end.get_pos())
+
+    directions,direction = get_end_direction(start.get_pos(),end.get_pos())
+    print(direction)
+    open_set_hash = {start}
+
+    while not open_set.empty():
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+
+        current = open_set.get()[2]
+        open_set_hash.remove(current)
+
+        if current == end:
+            pathcost = 0
+            reconstruct_path(came_from, end, draw)
+            end.make_end()
+            return True, pathcost
+
+        ##(1, 1), (0, 1), (1, 0), (0, -1), (-1, 0)
+        ##(-1,1),(0,1),(-1,0),(1,0),(1,1)
+        #(-1,1),(0,1),(-1,0),(1,0),(1,1)
+        #(1, 1), (0, 1), (1, 0), (0, -1), (-1, 0)
+
+        for direction in directions: #movement directions
+            temp = current
+            while True: #moving in the directions until a barrier or end is hit
+                x, y = temp.get_pos()
+                dx, dy = direction
+                if 0 <= x + dx < len(grid) and 0 <= y + dy < len(grid): # Ensure within grid
+                    next_node = grid[x + dx][y + dy]
+                    if next_node.is_barrier():
+                        break
+                    elif next_node == end:
+                        came_from[next_node] = temp
+                        pathcost = 0
+                        reconstruct_path(came_from, end, draw)
+                        end.make_end()
+                        return True, pathcost
+                    elif next_node not in open_set_hash:
+                        count += 1
+                        open_set.put((f_score[temp], count, next_node))
+                        open_set_hash.add(next_node)
+                        next_node.make_open()
+                        g_score[next_node] = g_score[temp] + 1
+                        f_score[next_node] = g_score[next_node] + h(next_node.get_pos(), end.get_pos())
+                        came_from[next_node] = temp
+
+                else:
+                    break
+                temp = next_node
+
+    return False, 0
+
 def make_grid(rows, width):
     grid = []
     gap = width // rows
@@ -163,7 +259,7 @@ def draw_grid(win, rows, width):
             pygame.draw.line(win, GREY, (j * gap, 0), (j * gap, width))
 
 def draw(win, grid, rows, width):
-    win.fill(WHITE)
+    #win.fill(WHITE)
 
     for row in grid:
         for node in row:
@@ -171,6 +267,7 @@ def draw(win, grid, rows, width):
 
     draw_grid(win, rows, width)
     pygame.display.update()
+    pygame.time.delay(10)
 
 def get_clicked_pos(pos, rows, width):
     gap = width // rows
@@ -245,7 +342,8 @@ def main(win, width):
                         for node in row:
                             node.update_neighbors(grid)
 
-                    success,pathcost =algorithm(lambda: draw(win, grid, ROWS, width), grid, start, end)
+                    #success,pathcost =algorithm(lambda: draw(win, grid, ROWS, width), grid, start, end)
+                    success,pathcost = Jump_Point_Search(lambda: draw(win, grid, ROWS, width), grid, start, end)
 
                 if event.key == pygame.K_c:
                     start = None
@@ -258,5 +356,3 @@ def main(win, width):
 
 main(WIN, WIDTH)
 
-
-# Further pygame implementation to interact with the window and other utility functions here
