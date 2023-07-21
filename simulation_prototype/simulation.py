@@ -3,6 +3,7 @@ import time
 from grid_map import GridMap
 from RRT_agent import RRTAgent
 from AStar_agent import AStarAgent
+from JPS_agent import JPSAgent
 from draw import Draw
 from math import dist
 from utils import append_to_csv
@@ -25,6 +26,7 @@ class Simulation:
         self.grid = GridMap(self, 40, 40)
         self.rrt_agent = RRTAgent(self)
         self.astar_agent = AStarAgent(self)
+        self.jps_agent = JPSAgent(self)
         self.solution_path = []
 
         self.screen = pygame.display.set_mode(self.window_size)
@@ -118,9 +120,12 @@ class Simulation:
         """
         Change the method called below to swap algorithms.
         """
+        # self.general_solve(event, self.rrt_agent, reverse=True)
         # self.general_solve(event, self.astar_agent)
-        self.general_solve(event, self.rrt_agent, reverse=True)
         # self.rrt_experiment(event)  # do not use this
+
+        self.general_solve(event, self.jps_agent)
+        # self.compare_astar(event)
 
     def general_solve(self, event, solver_agent, reverse=False):
         """
@@ -136,6 +141,7 @@ class Simulation:
         """
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_s:  # press [S] to solve
+
                 if not self.has_solution:
                     print("Solving...")
                     initial_time = time.time()
@@ -152,6 +158,33 @@ class Simulation:
                     print("Moving...")
                     for action in self.solution_path:
                         self.agent.queue_action(action)
+
+    def compare_astar(self, event):
+        """
+        Testing to see whether A* or JPS is better.
+        """
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_s:  # press [S] to solve
+                self.compare_print(self.astar_agent)
+                self.compare_print(self.rrt_agent)
+                self.compare_print(self.jps_agent)
+
+    def compare_print(self, solver_agent):
+        print("Solving...")
+        initial_time = time.time()
+        self.solution_path = solver_agent.solve()
+        final_time = time.time()
+        elapsed_time = final_time - initial_time  # in seconds
+        print(f"Solved! It took {elapsed_time} seconds to find "
+              f"a path with cost {solver_agent.path_cost:2f}")
+
+        if solver_agent.name == "RRT":
+            metric = solver_agent.iterations
+        else:
+            metric = solver_agent.explored_nodes
+
+        print(f"{solver_agent.name}: {metric} "
+              f"nodes explored, path cost is {solver_agent.path_cost}.")
 
     def move_agent_with_mouse(self, event):
         """For debugging."""
