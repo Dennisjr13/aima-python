@@ -28,49 +28,65 @@ class AStarAgent:
 
     # Use PriorityQueue and a set for the open list
     def solve(self):
+        # Create start and goal node
         start_node = Node(self.grid_map.get_cell_idx(*self.agent.pos), None)
         start_node.g = start_node.h = start_node.f = 0
         goal_node = Node(self.grid_map.goal_location, None)
         goal_node.g = goal_node.h = goal_node.f = 0
 
+        # Add the initial start node
         self.open_list.put((start_node.f, start_node))
         self.open_dict[start_node] = start_node.f
 
+        # Loop until you find the end or reach max_iterations
         iterations = 0
         while not self.open_list.empty():
             iterations += 1
             if iterations > self.max_iterations:
+                # return the current path so far
                 print("Too many iterations, unable to find solution")
                 return self.build_path(current_node)
 
+            # Get the current node
             current_node = self.open_list.get()[1]
+
+            # Pop current off open list, add to closed list
             del self.open_dict[current_node]
             self.closed_list.add(current_node)
 
             self.explored_nodes += 1
 
+            # Found the goal
             if self.grid_map.is_goal(current_node.coordinates[0], current_node.coordinates[1]):
                 return self.build_path(current_node)
 
+            # Generate children
             children = []
             for new_position in self.adjacent_nodes:
+                # Get node position
                 node_position = (
                     current_node.coordinates[0] + new_position[0], current_node.coordinates[1] + new_position[1])
 
+                # Make sure point is within range of canvas
                 if node_position[0] > self.grid_map.width or node_position[0] < 0 or \
                         node_position[1] > self.grid_map.height or node_position[1] < 0:
                     continue
 
+                # Make sure point is not in an obstacle
                 if self.grid_map.is_obstacle(node_position[0], node_position[1]):
                     continue
 
+                # Create and append new node
                 new_node = Node(node_position, current_node)
                 children.append(new_node)
 
+            # Loop through the children
             for child in children:
+                # Check if child is on the closed list
                 if child in self.closed_list:
                     continue
 
+                # Create the f, g, and h values
                 child.g = current_node.g + (((child.coordinates[0] - child.parent.coordinates[0]) ** 2) + (
                         (child.coordinates[1] - child.parent.coordinates[1]) ** 2)) ** 0.5
                 child.h = (((child.coordinates[0] - goal_node.coordinates[0]) ** 2) + (
@@ -88,6 +104,7 @@ class AStarAgent:
                         self.open_list.put((child.f, child))
                     continue
 
+                # Add the child to the open list
                 self.open_list.put((child.f, child))
                 self.open_dict[child] = child.f
                 self.grid_map.set_cell_value(1, child.coordinates[0], child.coordinates[1])
