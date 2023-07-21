@@ -16,17 +16,15 @@ class AStarAgent:
         if allow_diagonal_movement:
             self.adjacent_nodes = ((0, -1), (0, 1), (-1, 0), (1, 0), (-1, -1), (-1, 1), (1, -1), (1, 1))
 
+        # Use PriorityQueue and a set for the open list
         self.open_list = PriorityQueue()
         self.open_dict = {}
         self.closed_list = set()
 
         self.path_cost = 0
         self.explored_nodes = 0
-        self.name = "Temp A-Star"
+        self.name = "A-Star"
 
-    # other methods same as before...
-
-    # Use PriorityQueue and a set for the open list
     def solve(self):
         # Create start and goal node
         start_node = Node(self.grid_map.get_cell_idx(*self.agent.pos), None)
