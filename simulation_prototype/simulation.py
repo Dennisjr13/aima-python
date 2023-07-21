@@ -4,6 +4,7 @@ from grid_map import GridMap
 from RRT_agent import RRTAgent
 from AStar_agent import AStarAgent
 from JPS_agent import JPSAgent
+from updated_astar_agent import AStarAgent as TempAStarAgent
 from draw import Draw
 from math import dist
 from utils import append_to_csv
@@ -27,6 +28,9 @@ class Simulation:
         self.rrt_agent = RRTAgent(self)
         self.astar_agent = AStarAgent(self)
         self.jps_agent = JPSAgent(self)
+
+        self.temp_astar_agent = TempAStarAgent(self)  # !!! temporary
+
         self.solution_path = []
 
         self.screen = pygame.display.set_mode(self.window_size)
@@ -124,8 +128,8 @@ class Simulation:
         # self.general_solve(event, self.astar_agent)
         # self.rrt_experiment(event)  # do not use this
 
-        self.general_solve(event, self.jps_agent)
-        # self.compare_astar(event)
+        # self.general_solve(event, self.jps_agent)
+        self.compare_astar(event)
 
     def general_solve(self, event, solver_agent, reverse=False):
         """
@@ -166,8 +170,9 @@ class Simulation:
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_s:  # press [S] to solve
                 self.compare_print(self.astar_agent)
-                self.compare_print(self.rrt_agent)
+                self.compare_print(self.temp_astar_agent)
                 self.compare_print(self.jps_agent)
+                self.compare_print(self.rrt_agent)
 
     def compare_print(self, solver_agent):
         print("Solving...")
