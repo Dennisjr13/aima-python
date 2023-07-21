@@ -4,7 +4,6 @@ from grid_map import GridMap
 from RRT_agent import RRTAgent
 from AStar_agent import AStarAgent
 from JPS_agent import JPSAgent
-from updated_astar_agent import AStarAgent as TempAStarAgent
 from draw import Draw
 from math import dist
 from utils import append_to_csv
@@ -28,8 +27,6 @@ class Simulation:
         self.rrt_agent = RRTAgent(self)
         self.astar_agent = AStarAgent(self)
         self.jps_agent = JPSAgent(self)
-
-        self.temp_astar_agent = TempAStarAgent(self)  # !!! temporary
 
         self.solution_path = []
 
