@@ -11,7 +11,7 @@ class AStarAgent:
         # self.grid_map = GridMap(sim, 50, 50)
         self.obstacles = sim.inflated_obstacles
         # self.max_iterations = self.grid_map.width * self.grid_map.height
-        self.max_iterations = 10**6  # TODO: pick a reasonable value for this
+        self.max_iterations = 10**4  # TODO: pick a reasonable value for this
 
         self.adjacent_nodes = ((0, -1), (0, 1), (-1, 0), (1, 0))
         if allow_diagonal_movement:
