@@ -2,6 +2,31 @@ import pygame
 import csv
 
 
+class Node:
+    """ A node class for any Grid-Based Pathfinding"""
+    def __init__(self, coordinates: tuple, parent=None):
+        self.coordinates = coordinates
+        self.parent = parent
+
+        self.g = 0
+        self.h = 0
+        self.f = 0
+
+    def __eq__(self, other):
+        return self.coordinates == other.coordinates
+
+    def __hash__(self):
+        return hash(self.coordinates)
+
+    # for heap queue
+    def __lt__(self, other):
+        return self.f < other.f
+
+    # for heap queue
+    def __gt__(self, other):
+        return self.f > other.f
+
+
 def create_surface(surface_size):
     surface = pygame.Surface(surface_size, pygame.SRCALPHA)
     return surface

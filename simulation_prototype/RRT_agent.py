@@ -45,6 +45,7 @@ class RRTAgent:
 
         self.last_node_added = self.root
         self.goal_found = False
+        self.name = "RRT"
 
     def solve(self, dist_threshold=20, rate=0.5):
         # for experimenting purposes

@@ -1,27 +1,6 @@
 import heapq
 from math import dist
-
-
-class Node:
-    """ A node class for JPS Pathfinding """
-    def __init__(self, coordinates: tuple, parent=None):
-        self.coordinates = coordinates
-        self.parent = parent
-
-        self.g = 0
-        self.h = 0
-        self.f = 0
-
-    def __eq__(self, other):
-        return self.coordinates == other.coordinates
-
-    # for heap queue
-    def __lt__(self, other):
-        return self.f < other.f
-
-    # for heap queue
-    def __gt__(self, other):
-        return self.f > other.f
+from utils import Node
 
 
 class JPSAgent:
@@ -40,9 +19,11 @@ class JPSAgent:
 
         # Initialize both the open and closed list
         self.open_list = []
-        self.closed_list = []
+        self.closed_list = set()
 
         self.path_cost = 0
+        self.explored_nodes = 0
+        self.name = "JPS"
 
     def solve(self):
         # Create start and goal node
@@ -76,7 +57,9 @@ class JPSAgent:
 
             # Pop current off open list, add to closed list
             self.open_list.pop(current_index)
-            self.closed_list.append(current_node)
+            self.closed_list.add(current_node)
+
+            self.explored_nodes += 1  # instrumentation
 
             # Found the goal
             if self.grid_map.is_goal(current_node.coordinates[0], current_node.coordinates[1]):
@@ -99,7 +82,7 @@ class JPSAgent:
                 if self.grid_map.is_obstacle(node_position[0], node_position[1]):
                     continue
 
-                # Jump Point Search: Jump to next node in direction of new_position until an obstacle is found
+                # JPS: Jump to next node in direction of new_position until an obstacle is found
                 while not self.grid_map.is_obstacle(node_position[0], node_position[1]):
                     node_position = (
                         node_position[0] + new_position[0], node_position[1] + new_position[1])
@@ -112,6 +95,15 @@ class JPSAgent:
                     # Pruning: If the node is forced, it's a jump point
                     if self.is_forced(node_position, new_position):
                         break
+
+                    # Goal Bounding: If the node is the goal, add it to the open list and return the path
+                    if self.grid_map.is_goal(node_position[0], node_position[1]):
+                        goal_node = Node(node_position, current_node)
+                        goal_node.g = current_node.g + dist(node_position, current_node.coordinates)
+                        goal_node.h = 0
+                        goal_node.f = goal_node.g
+                        heapq.heappush(self.open_list, goal_node)
+                        return self.build_path(goal_node)
 
                 # If we've jumped onto an obstacle, step back one
                 if self.grid_map.is_obstacle(node_position[0], node_position[1]):

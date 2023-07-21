@@ -1,27 +1,6 @@
 import heapq
 from math import dist
-
-
-class Node:
-    """ A node class for A-Star Pathfinding """
-    def __init__(self, coordinates: tuple, parent=None):
-        self.coordinates = coordinates
-        self.parent = parent
-
-        self.g = 0
-        self.h = 0
-        self.f = 0
-
-    def __eq__(self, other):
-        return self.coordinates == other.coordinates
-
-    # for heap queue
-    def __lt__(self, other):
-        return self.f < other.f
-
-    # for heap queue
-    def __gt__(self, other):
-        return self.f > other.f
+from utils import Node
 
 
 class AStarAgent:
@@ -40,9 +19,11 @@ class AStarAgent:
 
         # Initialize both the open and closed list
         self.open_list = []
-        self.closed_list = []
+        self.closed_list = set()
 
         self.path_cost = 0
+        self.explored_nodes = 0
+        self.name = "A-Star"
 
     def solve(self):
         # Create start and goal node
@@ -75,7 +56,9 @@ class AStarAgent:
 
             # Pop current off open list, add to closed list
             self.open_list.pop(current_index)
-            self.closed_list.append(current_node)
+            self.closed_list.add(current_node)
+
+            self.explored_nodes += 1  # instrumentation
 
             # Found the goal
             if self.grid_map.is_goal(current_node.coordinates[0], current_node.coordinates[1]):
