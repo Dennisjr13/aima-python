@@ -3,7 +3,6 @@ from math import dist
 from random import randint
 from math import inf
 from random import random
-from utils import bound
 
 
 class Node:

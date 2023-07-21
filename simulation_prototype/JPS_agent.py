@@ -9,7 +9,7 @@ class JPSAgent:
         self.agent = sim.agent
         self.grid_map = sim.grid
         self.obstacles = sim.inflated_obstacles
-        self.max_iterations = 10**4
+        self.max_iterations = 10**6
 
         self.adjacent_nodes = ((0, -1), (0, 1), (-1, 0), (1, 0))
         if allow_diagonal_movement:
