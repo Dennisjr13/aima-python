@@ -127,7 +127,7 @@ def algorithm(draw, grid, start, end):
         current = open_set.get()[2]
         open_set_hash.remove(current)
 
-        if current == end:
+        if current.is_end():
             end.make_end()
             path_cost = reconstruct_path(came_from, end, draw)
             # Path cost is calculated in reconstruct path
@@ -148,7 +148,7 @@ def algorithm(draw, grid, start, end):
 
         draw()
 
-        if current != start:
+        if not current.is_start():
             current.make_closed()
 
     return False, 0
@@ -159,14 +159,14 @@ def get_end_direction(start, end):
     dy = end[1] - start[1]
 
     direction = []
-    if dx < 0:
+    if dx > 0:
         direction.append("right")
-    elif dx > 0:
+    elif dx < 0:
         direction.append("left")
 
-    if dy < 0:
+    if dy > 0:
         direction.append("down")
-    elif dy > 0:
+    elif dy < 0:
         direction.append("up")
 
     direction = '-'.join(direction)
@@ -209,7 +209,7 @@ def Jump_Point_Search(draw, grid, start, end):
         current = open_set.get()[2]
         open_set_hash.remove(current)
 
-        if current == end:
+        if current.is_end():
             end.make_end()
             path_cost = reconstruct_path(came_from, end, draw)
             # Path cost is calculated in reconstruct path
@@ -229,17 +229,18 @@ def Jump_Point_Search(draw, grid, start, end):
                     next_node = grid[x + dx][y + dy]
                     if next_node.is_barrier():
                         break
-                    elif next_node == end:
+                    elif next_node.is_end():
                         came_from[next_node] = temp
-                        pathcost = 0
+                        path_cost = 0
                         reconstruct_path(came_from, end, draw)
                         end.make_end()
-                        return True, pathcost
+                        return True, path_cost
                     elif next_node not in open_set_hash:
                         count += 1
                         open_set.put((f_score[temp], count, next_node))
                         open_set_hash.add(next_node)
-                        next_node.make_open()
+                        if not next_node.is_end():
+                            next_node.make_open()
                         g_score[next_node] = g_score[temp] + 1
                         f_score[next_node] = g_score[next_node] + h(next_node.get_pos(), end.get_pos())
                         came_from[next_node] = temp
@@ -331,15 +332,15 @@ def main(win, width):
                 print(row)
                 print(col)
                 node = grid[row][col]
-                if not start and node is not end:
+                if not start and not node.is_end():
                     start = node
                     start.make_start()
 
-                elif not end and node is not start:
+                elif not end and not node.is_start():
                     end = node
                     end.make_end()
 
-                elif node != end and node != start:
+                elif not (node.is_start() or node.is_end()):
                     node.make_barrier()
                 draw(win, grid, ROWS, width)
 
@@ -348,9 +349,9 @@ def main(win, width):
                 row, col = get_clicked_pos(pos, ROWS, width)
                 node = grid[row][col]
                 node.reset()
-                if node == start:
+                if node.is_start():
                     start = None
-                elif node == end:
+                elif node.is_end():
                     end = None
                 draw(win, grid, ROWS, width)
 
