@@ -78,6 +78,16 @@ class GridMap:
         goal_x, goal_y = self.goal_location[0], self.goal_location[1]
         return x_idx == goal_x and y_idx == goal_y
 
+    def is_valid(self, x_idx, y_idx):
+        """
+        Returns whether the given cell is within the grid and not an obstacle.
+        """
+        if x_idx < 0 or x_idx >= self.width or y_idx < 0 or y_idx >= self.height:
+            return False
+        if self.is_obstacle(x_idx, y_idx):
+            return False
+        return True
+
     def is_obstacle(self, x_idx, y_idx):
         """
         Returns whether the corresponding grid cell has an obstacle.
