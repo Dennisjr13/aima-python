@@ -1,6 +1,4 @@
-import time
 import pygame
-import math
 from queue import PriorityQueue
 
 WIDTH = 800
@@ -14,9 +12,10 @@ YELLOW = (255, 255, 0)
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 PURPLE = (128, 0, 128)
-ORANGE = (255, 165 ,0)
+ORANGE = (255, 165, 0)
 GREY = (128, 128, 128)
 TURQUOISE = (64, 224, 208)
+
 
 class Node:
     def __init__(self, row, col, width, total_rows):
@@ -73,32 +72,37 @@ class Node:
 
     def update_neighbors(self, grid):
         self.neighbors = []
-        if self.row < self.total_rows - 1 and not grid[self.row + 1][self.col].is_barrier(): # DOWN
+        if self.row < self.total_rows - 1 and not grid[self.row + 1][self.col].is_barrier():  # DOWN
             self.neighbors.append(grid[self.row + 1][self.col])
 
-        if self.row > 0 and not grid[self.row - 1][self.col].is_barrier(): # UP
+        if self.row > 0 and not grid[self.row - 1][self.col].is_barrier():  # UP
             self.neighbors.append(grid[self.row - 1][self.col])
 
-        if self.col < self.total_rows - 1 and not grid[self.row][self.col + 1].is_barrier(): # RIGHT
+        if self.col < self.total_rows - 1 and not grid[self.row][self.col + 1].is_barrier():  # RIGHT
             self.neighbors.append(grid[self.row][self.col + 1])
 
-        if self.col > 0 and not grid[self.row][self.col - 1].is_barrier(): # LEFT
+        if self.col > 0 and not grid[self.row][self.col - 1].is_barrier():  # LEFT
             self.neighbors.append(grid[self.row][self.col - 1])
+
 
 def h(p1, p2):
     x1, y1 = p1
     x2, y2 = p2
     return abs(x1 - x2) + abs(y1 - y2)
 
+
 def reconstruct_path(came_from, current, draw):
+    path_cost = 0
     while current in came_from:
-        #print(f"Current: {current}, Came From: {came_from[current]}")
+        # print(f"Current: {current}, Came From: {came_from[current]}")
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
         current = came_from[current]
         current.make_path()
         draw()
+        path_cost += 1  # Calculate path cost
+    return path_cost
 
 
 def algorithm(draw, grid, start, end):
@@ -121,9 +125,10 @@ def algorithm(draw, grid, start, end):
         open_set_hash.remove(current)
 
         if current == end:
-            pathcost = reconstruct_path(came_from, end, draw)
             end.make_end()
-            return True,pathcost
+            path_cost = reconstruct_path(came_from, end, draw)
+            # Path cost is calculated in reconstruct path
+            return True, path_cost
 
         for neighbor in current.neighbors:
             temp_g_score = g_score[current] + 1
@@ -143,9 +148,10 @@ def algorithm(draw, grid, start, end):
         if current != start:
             current.make_closed()
 
-    return False,0
+    return False, 0
 
-def get_end_direction(start,end):
+
+def get_end_direction(start, end):
     dx = end[0] - start[0]
     dy = end[1] - start[1]
 
@@ -163,16 +169,16 @@ def get_end_direction(start,end):
     direction = '-'.join(direction)
 
     if direction == "right-down":
-        directions = ((1,1),(0,1),(1,0),(0,-1),(-1,0))
+        directions = ((1, 1), (0, 1), (1, 0), (0, -1), (-1, 0))
         return directions, direction
     elif direction == "right-up":
-        directions = ((-1,1),(0,1),(1,0),(0,-1),(-1,0))
+        directions = ((-1, 1), (0, 1), (1, 0), (0, -1), (-1, 0))
         return directions, direction
     elif direction == "left-up":
-        directions = ((-1,-1),(0,1),(1,0),(0,-1),(-1,0))
+        directions = ((-1, -1), (0, 1), (1, 0), (0, -1), (-1, 0))
         return directions, direction
     elif direction == "left-down":
-        directions = ((1,-1),(0,1),(1,0),(0,-1),(-1,0))
+        directions = ((1, -1), (0, 1), (1, 0), (0, -1), (-1, 0))
         return directions, direction
     else:
         return None
@@ -188,7 +194,7 @@ def Jump_Point_Search(draw, grid, start, end):
     f_score = {node: float("inf") for row in grid for node in row}
     f_score[start] = h(start.get_pos(), end.get_pos())
 
-    directions,direction = get_end_direction(start.get_pos(),end.get_pos())
+    directions, direction = get_end_direction(start.get_pos(), end.get_pos())
     print(direction)
     open_set_hash = {start}
 
@@ -201,22 +207,22 @@ def Jump_Point_Search(draw, grid, start, end):
         open_set_hash.remove(current)
 
         if current == end:
-            pathcost = 0
-            reconstruct_path(came_from, end, draw)
             end.make_end()
-            return True, pathcost
+            path_cost = reconstruct_path(came_from, end, draw)
+            # Path cost is calculated in reconstruct path
+            return True, path_cost
 
-        ##(1, 1), (0, 1), (1, 0), (0, -1), (-1, 0)
-        ##(-1,1),(0,1),(-1,0),(1,0),(1,1)
-        #(-1,1),(0,1),(-1,0),(1,0),(1,1)
-        #(1, 1), (0, 1), (1, 0), (0, -1), (-1, 0)
+        # (1, 1), (0, 1), (1, 0), (0, -1), (-1, 0)
+        # (-1,1),(0,1),(-1,0),(1,0),(1,1)
+        # (-1,1),(0,1),(-1,0),(1,0),(1,1)
+        # (1, 1), (0, 1), (1, 0), (0, -1), (-1, 0)
 
-        for direction in directions: #movement directions
+        for direction in directions:  # movement directions
             temp = current
-            while True: #moving in the directions until a barrier or end is hit
+            while True:  # moving in the directions until a barrier or end is hit
                 x, y = temp.get_pos()
                 dx, dy = direction
-                if 0 <= x + dx < len(grid) and 0 <= y + dy < len(grid): # Ensure within grid
+                if 0 <= x + dx < len(grid) and 0 <= y + dy < len(grid):  # Ensure within grid
                     next_node = grid[x + dx][y + dy]
                     if next_node.is_barrier():
                         break
@@ -241,6 +247,7 @@ def Jump_Point_Search(draw, grid, start, end):
 
     return False, 0
 
+
 def make_grid(rows, width):
     grid = []
     gap = width // rows
@@ -251,6 +258,7 @@ def make_grid(rows, width):
             grid[i].append(node)
     return grid
 
+
 def draw_grid(win, rows, width):
     gap = width // rows
     for i in range(rows):
@@ -258,8 +266,9 @@ def draw_grid(win, rows, width):
         for j in range(rows):
             pygame.draw.line(win, GREY, (j * gap, 0), (j * gap, width))
 
+
 def draw(win, grid, rows, width):
-    #win.fill(WHITE)
+    win.fill(WHITE)
 
     for row in grid:
         for node in row:
@@ -268,6 +277,7 @@ def draw(win, grid, rows, width):
     draw_grid(win, rows, width)
     pygame.display.update()
     pygame.time.delay(10)
+
 
 def get_clicked_pos(pos, rows, width):
     gap = width // rows
@@ -278,6 +288,7 @@ def get_clicked_pos(pos, rows, width):
 
     return row, col
 
+
 def main(win, width):
     pygame.init()
     ROWS = 50
@@ -285,29 +296,33 @@ def main(win, width):
 
     start = None
     end = None
-    pathcost = 0
+    path_cost = 0
     run = True
     started = False
-    draw(win, grid, ROWS, width)
     success = False
     while run:
-        font = pygame.font.Font(None, 36)
-        text = font.render(f"Path Cost: {pathcost}", 1, (10, 10, 10))
-        win.blit(text, (10, 10))
-        pygame.display.flip()
+        win.fill(WHITE)
 
-        if success == True:
-            font = pygame.font.Font(None, 36)
+        font = pygame.font.Font(None, 36)
+        text = font.render(f"Path Cost: {path_cost}", 1, (10, 10, 10))
+        text_rect = text.get_rect(topleft=(10, 10))
+        win.blit(text, (10, 10))
+
+        if success:
             text = font.render("Target Found", 1, (255, 0, 0))
-            win.blit(text, (300, 10))
-            pygame.display.flip()
+            win.blit(text, (width // 2, 10))
+            win.blit(text, text_rect)
+
+        draw(win, grid, ROWS, width)
+
+        pygame.display.flip()
 
         for event in pygame.event.get():
 
             if event.type == pygame.QUIT:
                 run = False
 
-            if pygame.mouse.get_pressed()[0]: # LEFT
+            if pygame.mouse.get_pressed()[0]:  # LEFT
                 pos = pygame.mouse.get_pos()
                 row, col = get_clicked_pos(pos, ROWS, width)
                 print(row)
@@ -325,7 +340,7 @@ def main(win, width):
                     node.make_barrier()
                 draw(win, grid, ROWS, width)
 
-            elif pygame.mouse.get_pressed()[2]: # RIGHT
+            elif pygame.mouse.get_pressed()[2]:  # RIGHT
                 pos = pygame.mouse.get_pos()
                 row, col = get_clicked_pos(pos, ROWS, width)
                 node = grid[row][col]
@@ -342,8 +357,8 @@ def main(win, width):
                         for node in row:
                             node.update_neighbors(grid)
 
-                    #success,pathcost =algorithm(lambda: draw(win, grid, ROWS, width), grid, start, end)
-                    success,pathcost = Jump_Point_Search(lambda: draw(win, grid, ROWS, width), grid, start, end)
+                    # success,path_cost =algorithm(lambda: draw(win, grid, ROWS, width), grid, start, end)
+                    success, path_cost = Jump_Point_Search(lambda: draw(win, grid, ROWS, width), grid, start, end)
 
                 if event.key == pygame.K_c:
                     start = None
@@ -354,5 +369,5 @@ def main(win, width):
 
     pygame.quit()
 
-main(WIN, WIDTH)
 
+main(WIN, WIDTH)
