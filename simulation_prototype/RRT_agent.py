@@ -47,7 +47,7 @@ class RRTAgent:
         self.goal_found = False
         self.name = "RRT"
 
-    def solve(self, dist_threshold=20, rate=0.5):
+    def solve(self, dist_threshold=40, rate=0.5):
         # for experimenting purposes
         self.distance_threshold = dist_threshold
         self.rate = rate

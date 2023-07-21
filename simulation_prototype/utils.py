@@ -8,9 +8,7 @@ class Node:
         self.coordinates = coordinates
         self.parent = parent
 
-        self.g = 0
-        self.h = 0
-        self.f = 0
+        self.g = self.h = self.f = 0
 
     def __eq__(self, other):
         return self.coordinates == other.coordinates

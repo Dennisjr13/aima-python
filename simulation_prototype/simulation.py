@@ -19,7 +19,7 @@ class Simulation:
 
         self.file_name = file_name
         self.screen_size = self.env.size
-        self.window_size = (self.screen_size[0], self.screen_size[1])
+        self.window_size = (2*self.screen_size[0], self.screen_size[1])
 
         self.agent = agent
 
@@ -100,6 +100,9 @@ class Simulation:
                 self.has_solution = True
                 print("Done.")
 
+    def astar_experiment(self, event):
+        pass
+
     def rrt_trial(self, trial_number, distance_threshold, rate, file_name):
         """
         Not needed for simulation to run.
@@ -107,7 +110,8 @@ class Simulation:
         Helper method for experiment data collection.
         """
         # Test the function
-        path_agent = RRTAgent(self)
+        # path_agent = RRTAgent(self)
+
         initial_time = time.time()
         self.solution_path = path_agent.solve()
         final_time = time.time()
@@ -128,8 +132,9 @@ class Simulation:
         # self.general_solve(event, self.astar_agent)
         # self.rrt_experiment(event)  # do not use this
 
-        # self.general_solve(event, self.jps_agent)
-        self.compare_astar(event)
+        self.general_solve(event, self.jps_agent)
+        # self.general_solve(event, self.temp_astar_agent)
+        # self.compare_astar(event)
 
     def general_solve(self, event, solver_agent, reverse=False):
         """
