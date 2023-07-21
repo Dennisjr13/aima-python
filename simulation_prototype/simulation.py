@@ -126,11 +126,10 @@ class Simulation:
         Change the method called below to swap algorithms.
         """
         # self.general_solve(event, self.rrt_agent, reverse=True)
-        # self.general_solve(event, self.astar_agent)
+        self.general_solve(event, self.astar_agent)
         # self.rrt_experiment(event)  # do not use this
 
-        self.general_solve(event, self.jps_agent)
-        # self.general_solve(event, self.temp_astar_agent)
+        # self.general_solve(event, self.jps_agent)
         # self.compare_astar(event)
 
     def general_solve(self, event, solver_agent, reverse=False):
@@ -172,7 +171,6 @@ class Simulation:
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_s:  # press [S] to solve
                 self.compare_print(self.astar_agent)
-                self.compare_print(self.temp_astar_agent)
                 self.compare_print(self.jps_agent)
                 self.compare_print(self.rrt_agent)
 
