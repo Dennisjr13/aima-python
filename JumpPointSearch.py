@@ -28,6 +28,9 @@ class Node:
         self.width = width
         self.total_rows = total_rows
 
+    def __str__(self):
+        return f"Node([r, c]: [{self.row}, {self.col}], color: {self.color})"
+
     def get_pos(self):
         return self.row, self.col
 
@@ -328,11 +331,11 @@ def main(win, width):
                 print(row)
                 print(col)
                 node = grid[row][col]
-                if not start and node != end:
+                if not start and node is not end:
                     start = node
                     start.make_start()
 
-                elif not end and node != start:
+                elif not end and node is not start:
                     end = node
                     end.make_end()
 
