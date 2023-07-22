@@ -123,11 +123,13 @@ class Simulation:
         """
         Change the method called below to swap algorithms.
         """
-        # self.general_solve(event, self.rrt_agent, reverse=True)
-        # self.general_solve(event, self.astar_agent)
         # self.rrt_experiment(event)  # do not use this
 
+        # self.general_solve(event, self.rrt_agent, reverse=True)
+        # self.general_solve(event, self.astar_agent)
+        # self.general_solve(event, self.diagonal_astar_agent)
         self.general_solve(event, self.jps_agent)
+
         # self.compare_astar(event)
 
     def general_solve(self, event, solver_agent, reverse=False):
