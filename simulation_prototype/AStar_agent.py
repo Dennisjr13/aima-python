@@ -38,8 +38,10 @@ class AStarAgent:
 
         # Loop until you find the end or reach max_iterations
         iterations = 0
+        current_node = None
         while not self.open_list.empty():
             iterations += 1
+
             if iterations > self.max_iterations:
                 # return the current path so far
                 print("Too many iterations, unable to find solution")
