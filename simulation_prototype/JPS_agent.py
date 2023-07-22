@@ -93,28 +93,50 @@ class JPSAgent:
 
     def get_successors(self, current_node, goal_node):
         successors = []
-        for direction in self.adjacent_nodes:
+        # If the current node has a parent, i.e., it is not the starting node.
+        if current_node.parent:
+            parent_direction = (int((current_node.coordinates[0] - current_node.parent.coordinates[0]) / max(
+                abs(current_node.coordinates[0] - current_node.parent.coordinates[0]), 1)),
+                                int((current_node.coordinates[1] - current_node.parent.coordinates[1]) / max(
+                                    abs(current_node.coordinates[1] - current_node.parent.coordinates[1]), 1)))
+            # This would normally be just the direction of the parent to the current node,
+            # but we also need to include directions which lead to a forced neighbor.
+            directions = [parent_direction]
+            if parent_direction[0] != 0 and parent_direction[1] != 0:
+                directions.append((parent_direction[0], 0))
+                directions.append((0, parent_direction[1]))
+            else:
+                if parent_direction[0] == 0:
+                    directions.extend([(-1, 0), (1, 0)])
+                else:
+                    directions.extend([(0, -1), (0, 1)])
+        else:
+            directions = self.adjacent_nodes
+
+        for direction in directions:
             next_node = self.jump(current_node.coordinates, direction, current_node)
             if next_node:
                 successors.append(next_node)
         return successors
 
     def jump(self, node_position, direction, parent_node):
-        while True:
-            next_position = (node_position[0] + direction[0], node_position[1] + direction[1])
+        next_position = (node_position[0] + direction[0], node_position[1] + direction[1])
+        if next_position[0] > self.grid_map.width or next_position[0] < 0 or \
+                next_position[1] > self.grid_map.height or next_position[1] < 0 or \
+                self.grid_map.is_obstacle(next_position[0], next_position[1]):
+            return None
 
-            if next_position[0] > self.grid_map.width or next_position[0] < 0 or \
-                    next_position[1] > self.grid_map.height or next_position[1] < 0 or \
-                    self.grid_map.is_obstacle(next_position[0], next_position[1]):
-                return None
+        if self.grid_map.is_goal(next_position[0], next_position[1]):
+            return Node(next_position, parent_node)
 
-            if self.grid_map.is_goal(next_position[0], next_position[1]):
+        if self.is_forced(next_position, direction):
+            return Node(next_position, parent_node)
+
+        if direction[0] != 0 and direction[1] != 0:
+            if self.jump(next_position, (direction[0], 0), parent_node) is not None or \
+                    self.jump(next_position, (0, direction[1]), parent_node) is not None:
                 return Node(next_position, parent_node)
-
-            if self.is_forced(next_position, direction):
-                return Node(next_position, parent_node)
-
-            node_position = next_position
+        return self.jump(next_position, direction, parent_node)
 
     def is_forced(self, node_position, direction):
         dx, dy = direction
