@@ -24,6 +24,8 @@ class AStarAgent:
         self.path_cost = 0
         self.explored_nodes = 0
         self.name = "A-Star"
+        if allow_diagonal_movement:
+            self.name = "Diagonal-" + self.name
 
     def solve(self):
         # Create start and goal node

@@ -26,6 +26,7 @@ class Simulation:
         self.grid = GridMap(self, 250, 250)
         self.rrt_agent = RRTAgent(self)
         self.astar_agent = AStarAgent(self)
+        self.diagonal_astar_agent = AStarAgent(self, allow_diagonal_movement=True)
         self.jps_agent = JPSAgent(self)
 
         self.solution_path = []
@@ -150,7 +151,7 @@ class Simulation:
                     self.solution_path = solver_agent.solve()
                     final_time = time.time()
                     elapsed_time = final_time - initial_time  # in seconds
-                    print(f"Solved! It took {elapsed_time} seconds to find "
+                    print(f"Solved with {solver_agent.name}! It took {elapsed_time} seconds to find "
                           f"a path with cost {solver_agent.path_cost:2f}")
                     if reverse:
                         self.solution_path.reverse()
@@ -168,10 +169,11 @@ class Simulation:
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_s:  # press [S] to solve
                 self.compare_print(self.astar_agent)
+                self.compare_print(self.diagonal_astar_agent)
                 self.compare_print(self.jps_agent)
                 self.compare_print(self.rrt_agent)
 
-    def compare_print(self, solver_agent):
+    def compare_print(self, solver_agent, diagonal=False):
         print("Solving...")
         initial_time = time.time()
         self.solution_path = solver_agent.solve()
