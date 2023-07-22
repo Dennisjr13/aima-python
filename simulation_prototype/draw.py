@@ -145,6 +145,9 @@ class Draw:
         self.path_surface.fill((0, 0, 0, 0))
 
         path_copy = deepcopy(self.sim.solution_path)
+        if path_copy is None:
+            print("There is no path.")
+            return
         path_copy.reverse()
         previous = path_copy.pop()
         while path_copy:
