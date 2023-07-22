@@ -41,7 +41,7 @@ def bound(value, lower_bound, upper_bound):
 
 def append_to_csv(filename, data):
     # Open the file in append mode
-    with open(filename, 'a') as f:
+    with open(filename, 'a', newline='') as f:
         # Create a csv writer
         writer = csv.writer(f)
         # Write the data
