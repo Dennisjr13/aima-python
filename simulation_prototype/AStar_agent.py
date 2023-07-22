@@ -11,6 +11,7 @@ class AStarAgent:
         self.grid_map = sim.grid
         self.obstacles = sim.inflated_obstacles
         self.max_iterations = 10 ** 6
+        self.iterations = 0
 
         self.adjacent_nodes = ((0, -1), (0, 1), (-1, 0), (1, 0))
         if allow_diagonal_movement:
@@ -39,12 +40,11 @@ class AStarAgent:
         self.open_dict[start_node] = start_node.f
 
         # Loop until you find the end or reach max_iterations
-        iterations = 0
         current_node = None
         while not self.open_list.empty():
-            iterations += 1
+            self.iterations += 1
 
-            if iterations > self.max_iterations:
+            if self.iterations > self.max_iterations:
                 # return the current path so far
                 print("Too many iterations, unable to find solution")
                 return self.build_path(current_node)

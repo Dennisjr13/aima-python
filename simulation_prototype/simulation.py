@@ -119,11 +119,61 @@ class Simulation:
         append_to_csv(file_name, data)
         return path_cost, iterations, time_cost
 
+    def astar_experiment(self, event):
+        """
+        Not needed for simulation to run.
+
+        Automates the data collection process.
+        Outputs both raw and aggregate data.
+        """
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_s:  # press [S] to solve
+                if self.has_solution:
+                    return
+
+                csv_name = self.file_name + ".csv"
+
+                headers = ['Grid Size', 'Diagonal', 'Path Cost', 'Iterations', 'Time Cost']
+                append_to_csv(csv_name, headers)
+
+                grid_size = list(range(250, 10, -10))
+                diagonal = [False, True]
+
+                for gs in grid_size:
+                    for d in diagonal:
+                        print(f"Grid Size: {gs}, Diagonal: {d}")
+                        path_cost, iterations, time_cost = self.astar_trial(gs, d, csv_name)
+                self.has_solution = True
+                print("Done.")
+
+    def astar_trial(self, grid_size, diagonal, file_name):
+        """
+        Not needed for simulation to run.
+
+        Helper method for experiment data collection.
+        """
+        # Test the function
+        path_agent = AStarAgent(self, allow_diagonal_movement=True) if diagonal else AStarAgent(self)
+        self.grid = GridMap(self, grid_size, grid_size)
+
+        initial_time = time.time()
+        self.solution_path = path_agent.solve()
+        final_time = time.time()
+
+        time_cost = final_time - initial_time  # in seconds
+        path_cost = path_agent.path_cost
+        iterations = path_agent.iterations
+
+        data = [grid_size, diagonal, path_cost, iterations, time_cost]
+        append_to_csv(file_name, data)
+        return path_cost, iterations, time_cost
+
     def plan_path(self, event):
         """
         Change the method called below to swap algorithms.
         """
         # self.rrt_experiment(event)  # do not use this
+        # self.astar_experiment(event)  # do not use this
 
         # self.general_solve(event, self.rrt_agent, reverse=True)
         # self.general_solve(event, self.astar_agent)
