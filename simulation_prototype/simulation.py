@@ -23,7 +23,7 @@ class Simulation:
         self.agent = agent
 
         self.inflated_obstacles = self.inflate_obstacles(self.agent.collision_distance)
-        self.grid = GridMap(self, 40, 40)
+        self.grid = GridMap(self, 250, 250)
         self.rrt_agent = RRTAgent(self)
         self.astar_agent = AStarAgent(self)
         self.jps_agent = JPSAgent(self)
@@ -97,9 +97,6 @@ class Simulation:
                 self.has_solution = True
                 print("Done.")
 
-    def astar_experiment(self, event):
-        pass
-
     def rrt_trial(self, trial_number, distance_threshold, rate, file_name):
         """
         Not needed for simulation to run.
@@ -107,7 +104,7 @@ class Simulation:
         Helper method for experiment data collection.
         """
         # Test the function
-        # path_agent = RRTAgent(self)
+        path_agent = RRTAgent(self)
 
         initial_time = time.time()
         self.solution_path = path_agent.solve()
@@ -126,10 +123,10 @@ class Simulation:
         Change the method called below to swap algorithms.
         """
         # self.general_solve(event, self.rrt_agent, reverse=True)
-        self.general_solve(event, self.astar_agent)
+        # self.general_solve(event, self.astar_agent)
         # self.rrt_experiment(event)  # do not use this
 
-        # self.general_solve(event, self.jps_agent)
+        self.general_solve(event, self.jps_agent)
         # self.compare_astar(event)
 
     def general_solve(self, event, solver_agent, reverse=False):
