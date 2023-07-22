@@ -2,21 +2,15 @@ from math import dist
 from utils import Node
 from queue import PriorityQueue
 
-
 class JPSAgent:
-    """ An agent class for JPS Pathfinding """
-
-    def __init__(self, sim, allow_diagonal_movement=False):
+    def __init__(self, sim):
         self.agent = sim.agent
         self.grid_map = sim.grid
         self.obstacles = sim.inflated_obstacles
         self.max_iterations = 10**6
 
-        self.adjacent_nodes = ((0, -1), (0, 1), (-1, 0), (1, 0))
-        if allow_diagonal_movement:
-            self.adjacent_nodes = ((0, -1), (0, 1), (-1, 0), (1, 0), (-1, -1), (-1, 1), (1, -1), (1, 1))
+        self.adjacent_nodes = ((0, -1), (0, 1), (-1, 0), (1, 0), (-1, -1), (-1, 1), (1, -1), (1, 1))
 
-        # Use PriorityQueue and a set for the open list
         self.open_list = PriorityQueue()
         self.open_dict = {}
         self.closed_list = set()
@@ -26,65 +20,50 @@ class JPSAgent:
         self.name = "JPS"
 
     def solve(self):
-        # Create start and goal node
         start_node = Node(self.grid_map.get_cell_idx(*self.agent.pos), None)
         start_node.g = start_node.h = start_node.f = 0
         goal_node = Node(self.grid_map.goal_location, None)
         goal_node.g = goal_node.h = goal_node.f = 0
 
-        # Add the initial start node
         self.open_list.put((start_node.f, start_node))
         self.open_dict[start_node] = start_node.f
 
-        # Loop until you find the end or reach max_iterations
         iterations = 0
         current_node = None
         while not self.open_list.empty():
             iterations += 1
 
             if iterations > self.max_iterations:
-                # return the current path so far
                 print("Too many iterations, unable to find solution")
                 return self.build_path(current_node)
 
-            # Get the current node
             current_node = self.open_list.get()[1]
 
-            # Pop current off open list, add to closed list
             del self.open_dict[current_node]
             self.closed_list.add(current_node)
 
             self.explored_nodes += 1
 
-            # Found the goal
-            if self.grid_map.is_goal(current_node.coordinates[0], current_node.coordinates[1]):
+            if current_node.coordinates == goal_node.coordinates:
                 return self.build_path(current_node)
 
             children = self.get_successors(current_node, goal_node)
 
-            # Loop through the children
             for child in children:
-                # Check if child is on the closed list
                 if child in self.closed_list:
                     continue
 
-                # Create the f, g, and h values
                 child.g = current_node.g + dist(child.coordinates, current_node.coordinates)
                 child.h = dist(child.coordinates, goal_node.coordinates)
                 child.f = child.g + child.h
 
-                # We check for the presence of a child in the open list by checking the open_dict
                 if child in self.open_dict:
-                    open_node = child  # the child is the node in open_list
+                    open_node = child
                     if child.g < open_node.g:
-                        # We replace the node's g value in open_dict
                         self.open_dict[child] = child.g
-
-                        # We cannot update the node in open_list, so we add it again
                         self.open_list.put((child.f, child))
                     continue
 
-                # Add the child to the open list
                 self.open_list.put((child.f, child))
                 self.open_dict[child] = child.f
                 self.grid_map.set_cell_value(1, child.coordinates[0], child.coordinates[1])
@@ -93,80 +72,53 @@ class JPSAgent:
 
     def get_successors(self, current_node, goal_node):
         successors = []
-        # If the current node has a parent, i.e., it is not the starting node.
-        if current_node.parent:
-            parent_direction = (int((current_node.coordinates[0] - current_node.parent.coordinates[0]) / max(
-                abs(current_node.coordinates[0] - current_node.parent.coordinates[0]), 1)),
-                                int((current_node.coordinates[1] - current_node.parent.coordinates[1]) / max(
-                                    abs(current_node.coordinates[1] - current_node.parent.coordinates[1]), 1)))
-            # This would normally be just the direction of the parent to the current node,
-            # but we also need to include directions which lead to a forced neighbor.
-            directions = [parent_direction]
-            if parent_direction[0] != 0 and parent_direction[1] != 0:
-                directions.append((parent_direction[0], 0))
-                directions.append((0, parent_direction[1]))
-            else:
-                if parent_direction[0] == 0:
-                    directions.extend([(-1, 0), (1, 0)])
-                else:
-                    directions.extend([(0, -1), (0, 1)])
-        else:
-            directions = self.adjacent_nodes
-
-        for direction in directions:
-            next_node = self.jump(current_node.coordinates, direction, current_node)
-            if next_node:
-                successors.append(next_node)
+        for direction in self.adjacent_nodes:
+            next_coordinates = tuple(map(sum, zip(current_node.coordinates, direction)))
+            if self.grid_map.is_valid(*next_coordinates) and not self.grid_map.is_obstacle(*next_coordinates):
+                jump_node = self.jump(next_coordinates, direction, current_node)
+                if jump_node is not None:
+                    successors.append(jump_node)
         return successors
 
-    def jump(self, node_position, direction, parent_node):
-        next_position = (node_position[0] + direction[0], node_position[1] + direction[1])
-        if next_position[0] > self.grid_map.width or next_position[0] < 0 or \
-                next_position[1] > self.grid_map.height or next_position[1] < 0 or \
-                self.grid_map.is_obstacle(next_position[0], next_position[1]):
-            return None
+    def jump(self, current_coordinates, direction, parent_node):
+        next_coordinates = current_coordinates
+        while True:
+            next_coordinates = tuple(map(sum, zip(next_coordinates, direction)))
+            if not self.grid_map.is_valid(*next_coordinates) or self.grid_map.is_obstacle(*next_coordinates):
+                return None
+            if self.grid_map.is_goal(*next_coordinates):
+                return Node(next_coordinates, parent_node)
+            if self.is_forced(next_coordinates, direction):
+                return Node(next_coordinates, parent_node)
+            if direction[0] != 0 and direction[1] != 0:
+                if self.jump(next_coordinates, (direction[0], 0), parent_node) is not None or \
+                   self.jump(next_coordinates, (0, direction[1]), parent_node) is not None:
+                    return Node(next_coordinates, parent_node)
 
-        if self.grid_map.is_goal(next_position[0], next_position[1]):
-            return Node(next_position, parent_node)
-
-        if self.is_forced(next_position, direction):
-            return Node(next_position, parent_node)
-
-        if direction[0] != 0 and direction[1] != 0:
-            if self.jump(next_position, (direction[0], 0), parent_node) is not None or \
-                    self.jump(next_position, (0, direction[1]), parent_node) is not None:
-                return Node(next_position, parent_node)
-        return self.jump(next_position, direction, parent_node)
+        return Node(next_coordinates, parent_node)
 
     def is_forced(self, node_position, direction):
         dx, dy = direction
         if dx != 0:
-            if (self.grid_map.is_valid(node_position[0], node_position[1] + 1) and
-                not self.grid_map.is_obstacle(node_position[0] - dx, node_position[1] + 1)) or \
-                    (self.grid_map.is_valid(node_position[0], node_position[1] - 1) and
-                     not self.grid_map.is_obstacle(node_position[0] - dx, node_position[1] - 1)):
-                return True
+            return ((self.grid_map.is_valid(node_position[0] + dx, node_position[1] + 1) and
+                     self.grid_map.is_obstacle(node_position[0], node_position[1] + 1)) or
+                    (self.grid_map.is_valid(node_position[0] + dx, node_position[1] - 1) and
+                     self.grid_map.is_obstacle(node_position[0], node_position[1] - 1)))
         else:
-            if (self.grid_map.is_valid(node_position[0] + 1, node_position[1]) and
-                not self.grid_map.is_obstacle(node_position[0] + 1, node_position[1] - dy)) or \
-                    (self.grid_map.is_valid(node_position[0] - 1, node_position[1]) and
-                     not self.grid_map.is_obstacle(node_position[0] - 1, node_position[1] - dy)):
-                return True
-        return False
+            return ((self.grid_map.is_valid(node_position[0] + 1, node_position[1] + dy) and
+                     self.grid_map.is_obstacle(node_position[0] + 1, node_position[1])) or
+                    (self.grid_map.is_valid(node_position[0] - 1, node_position[1] + dy) and
+                     self.grid_map.is_obstacle(node_position[0] - 1, node_position[1])))
 
     def build_path(self, last_node_added):
         path = []
         current = last_node_added
         while current is not None:
-            cur_coords = self.grid_map.get_center(current.coordinates[0],
-                                                  current.coordinates[1])
+            cur_coords = self.grid_map.get_center(current.coordinates[0], current.coordinates[1])
             path.append(cur_coords)
             if current.parent is not None:
-                par_coords = self.grid_map.get_center(current.parent.coordinates[0],
-                                                      current.parent.coordinates[1])
-                self.path_cost += dist((cur_coords[0], cur_coords[1]),
-                                       (par_coords[0], par_coords[1]))
-
+                par_coords = self.grid_map.get_center(current.parent.coordinates[0], current.parent.coordinates[1])
+                self.path_cost += dist((cur_coords[0], cur_coords[1]), (par_coords[0], par_coords[1]))
             current = current.parent
         return path[::-1]
 
