@@ -2,6 +2,7 @@ from math import dist
 from utils import Node
 from queue import PriorityQueue
 
+
 class JPSAgent:
     def __init__(self, sim):
         self.agent = sim.agent
@@ -20,6 +21,8 @@ class JPSAgent:
         self.name = "JPS"
 
     def solve(self):
+
+        # boiler plate
         start_node = Node(self.grid_map.get_cell_idx(*self.agent.pos), None)
         start_node.g = start_node.h = start_node.f = 0
         goal_node = Node(self.grid_map.goal_location, None)
@@ -30,6 +33,8 @@ class JPSAgent:
 
         iterations = 0
         current_node = None
+
+        # algorithm
         while not self.open_list.empty():
             iterations += 1
 
@@ -95,8 +100,6 @@ class JPSAgent:
                    self.jump(next_coordinates, (0, direction[1]), parent_node) is not None:
                     return Node(next_coordinates, parent_node)
 
-        return Node(next_coordinates, parent_node)
-
     def is_forced(self, node_position, direction):
         dx, dy = direction
         if dx != 0:
@@ -114,11 +117,13 @@ class JPSAgent:
         path = []
         current = last_node_added
         while current is not None:
-            cur_coords = self.grid_map.get_center(current.coordinates[0], current.coordinates[1])
-            path.append(cur_coords)
+            current_coordinates = self.grid_map.get_center(current.coordinates[0], current.coordinates[1])
+            path.append(current_coordinates)
             if current.parent is not None:
-                par_coords = self.grid_map.get_center(current.parent.coordinates[0], current.parent.coordinates[1])
-                self.path_cost += dist((cur_coords[0], cur_coords[1]), (par_coords[0], par_coords[1]))
+                parent_coordinates = self.grid_map.get_center(current.parent.coordinates[0],
+                                                              current.parent.coordinates[1])
+                self.path_cost += dist((current_coordinates[0], current_coordinates[1]),
+                                       (parent_coordinates[0], parent_coordinates[1]))
             current = current.parent
         return path[::-1]
 
