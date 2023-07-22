@@ -143,18 +143,20 @@ class Draw:
         if not self.sim.has_solution:
             return
         self.path_surface.fill((0, 0, 0, 0))
-
-        path_copy = deepcopy(self.sim.solution_path)
-        if path_copy is None:
-            print("There is no path.")
-            return
-        path_copy.reverse()
-        previous = path_copy.pop()
-        while path_copy:
-            current = path_copy.pop()
-            pygame.draw.line(self.path_surface, pygame.Color(0, 0, 255), current, previous)
-            previous = current
-        self.screen.blit(self.path_surface, (0, 0))
+        try:
+            path_copy = deepcopy(self.sim.solution_path)
+            if path_copy is None:
+                print("There is no path.")
+                return
+            path_copy.reverse()
+            previous = path_copy.pop()
+            while path_copy:
+                current = path_copy.pop()
+                pygame.draw.line(self.path_surface, pygame.Color(0, 0, 255), current, previous)
+                previous = current
+            self.screen.blit(self.path_surface, (0, 0))
+        except:
+            print(self.sim.solution_path)
 
     def draw_tree(self):
         self.tree_surface.fill((0, 0, 0, 0))
