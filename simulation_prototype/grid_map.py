@@ -156,7 +156,6 @@ class GridMap:
         for x, y in solution_path:
             i, j = self.get_cell_idx(x, y)
             self.set_cell_value(self.SO, i, j)
-            print("hi")
         self.solution_path_shown = True
 
 # for debugging purposes
