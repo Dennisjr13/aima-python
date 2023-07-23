@@ -23,13 +23,12 @@ class Simulation:
         self.agent = agent
 
         self.inflated_obstacles = self.inflate_obstacles(self.agent.collision_distance)
+        self.solution_path = []
         self.grid = GridMap(self, 250, 250)
         self.rrt_agent = RRTAgent(self)
         self.astar_agent = AStarAgent(self)
         self.diagonal_astar_agent = AStarAgent(self, allow_diagonal_movement=True)
         self.jps_agent = JPSAgent(self)
-
-        self.solution_path = []
 
         self.screen = pygame.display.set_mode(self.window_size)
         self.draw = Draw(self)
