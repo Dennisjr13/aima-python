@@ -16,16 +16,8 @@ class JPSAgent:
 
         # --------------------------
 
-        self.TL = (-1, -1)  # top left
-        self.T = (0, -1)  # top
-        self.TR = (1, -1)  # top right
-        self.L = (-1, 0)  # left
-        self.R = (1, 0)  # right
-        self.BL = (-1, 1)  # bottom left
-        self.B = (0, 1)  # bottom
-        self.BR = (1, 1)  # bottom right
-        self.adjacent_nodes = (self.TL, self.T, self.TR, self.L,
-                               self.R, self.BL, self.B, self.BR)
+        self.adjacent_nodes = ((-1, -1), (0, -1), (1, -1), (-1, 0),
+                               (1, 0), (-1, 1), (0, 1), (1, 1))
 
         self.open_list = PriorityQueue()
         self.open_dict = {}
