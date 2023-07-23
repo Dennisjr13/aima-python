@@ -135,7 +135,7 @@ class Simulation:
                 headers = ['Grid Size', 'Diagonal', 'Path Cost', 'Iterations', 'Time Cost']
                 append_to_csv(csv_name, headers)
 
-                grid_size = list(range(250, 10, -10))
+                grid_size = list(range(250, 0, -10))
                 diagonal = [False, True]
 
                 for gs in grid_size:
