@@ -3,6 +3,7 @@ from math import dist
 from random import randint
 from math import inf
 from random import random
+from scipy.spatial import KDTree
 
 
 class Node:
@@ -46,6 +47,10 @@ class RRTAgent:
         self.goal_found = False
         self.name = "RRT"
 
+        # list of all nodes and k-d tree for efficient nearest neighbor search
+        self.nodes = [self.root]
+        self.kdtree = KDTree([[self.root.x, self.root.y]])
+
     def solve(self, dist_threshold=40, rate=0.5):
         # for experimenting purposes
         self.distance_threshold = dist_threshold
@@ -61,10 +66,8 @@ class RRTAgent:
 
     def next_move(self):
         self.choose_new_point()
-        self.best_score = inf
-        self.find_closest_node(self.root)
-        node = self.closest_node
-        self.grow_tree(node)
+        self.closest_node = self.find_closest_node()
+        self.grow_tree(self.closest_node)
 
     def choose_new_point(self):
         if random() < self.rate:
@@ -78,16 +81,10 @@ class RRTAgent:
         random_y = randint(0, self.screen_size[1])
         return random_x, random_y
 
-    def find_closest_node(self, node):
+    def find_closest_node(self):
         """Find the node on the tree closest to the chosen point."""
-        current_node_score = dist((node.x, node.y), self.point)
-
-        if current_node_score < self.best_score:
-            self.best_score = current_node_score
-            self.closest_node = node
-
-        for child in node.children:
-            self.find_closest_node(child)
+        dist, idx = self.kdtree.query(self.point)
+        return self.nodes[idx]
 
     def grow_tree(self, node):
         """
@@ -117,6 +114,8 @@ class RRTAgent:
 
         self.last_node_added = Node((new_x, new_y), node)
         self.iterations += 1
+        self.nodes.append(self.last_node_added)
+        self.kdtree = KDTree([(node.x, node.y) for node in self.nodes])  # update k-d tree
 
     def is_goal_reached(self, point):
         if dist(point, self.goal) < self.goal_threshold:
