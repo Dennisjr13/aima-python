@@ -21,6 +21,7 @@ class GridMap:
         """
 
         # boilerplate
+        self.sim = sim
         self.agent = sim.agent
         self.obstacles = sim.inflated_obstacles
         self.size = sim.screen_size  # size of map
@@ -31,6 +32,7 @@ class GridMap:
         self.UN = 0  # unexplored free space
         self.EX = 1  # explored free space
         self.OB = 2  # obstacle
+        self.SO = 3  # nodes in the solution path
 
         # boilerplate
         self.cell_width = self.size[0]/self.width
@@ -40,6 +42,7 @@ class GridMap:
         self.agent_location = self.get_cell_idx(*self.agent.pos)
 
         self.add_obstacle_cells()
+        self.solution_path_shown = False  # for displaying the solution path on the grid map
 
     def get_cell_value(self, x_idx, y_idx):
         return self.graph[x_idx][y_idx]
@@ -122,8 +125,12 @@ class GridMap:
             return Color(255, 255, 255, 255)
         elif status == self.EX:
             return Color(0, 0, 255, 255)
-        else:  # status == self.OB
+        elif status == self.OB:
             return Color(255, 0, 0, 255)
+        elif status == self.SO:
+            return Color(0, 255, 255, 255)
+        else:
+            return Color(0, 0, 0, 255)  # something went wrong if this shows up
 
     def add_obstacle_cells(self):
         """
@@ -140,6 +147,17 @@ class GridMap:
                 for j in range(low_y, high_y + 1):
                     self.set_cell_value(self.OB, i, j)
 
+    def add_solution_path(self):
+        if self.solution_path_shown:
+            return
+        solution_path = self.sim.solution_path
+        if solution_path is None:
+            return
+        for x, y in solution_path:
+            i, j = self.get_cell_idx(x, y)
+            self.set_cell_value(self.SO, i, j)
+            print("hi")
+        self.solution_path_shown = True
 
 # for debugging purposes
 if __name__ == '__main__':

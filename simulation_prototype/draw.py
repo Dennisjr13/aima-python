@@ -24,6 +24,7 @@ class Draw:
         # debugging
         self.point_surface = create_surface(self.size)
         self.inflated_obstacles_surface = create_surface(self.size)
+        self.there_is_no_path_notif_shown = False
 
     def draw_everything(self):
         self.screen.fill((211, 211, 211))  # color of free space
@@ -142,11 +143,14 @@ class Draw:
     def draw_path(self):
         if not self.sim.has_solution:
             return
+        self.sim.grid.add_solution_path()
         self.path_surface.fill((0, 0, 0, 0))
         try:
             path_copy = deepcopy(self.sim.solution_path)
             if path_copy is None:
-                print("There is no path.")
+                if not self.there_is_no_path_notif_shown:
+                    print("There is no path.")
+                    self.there_is_no_path_notif_shown = True
                 return
             path_copy.reverse()
             previous = path_copy.pop()
