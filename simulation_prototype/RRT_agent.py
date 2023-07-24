@@ -37,6 +37,8 @@ class RRTAgent:
         # accumulators for evaluation
         self.iterations = 0  # number of nodes in tree
         self.path_cost = 0  # cost of solution path
+        self.canceled_iterations = 0  # number of canceled expansions
+        self.max_canceled_iterations = 1e6
 
         # accumulators for internal methods
         self.point = None
@@ -51,7 +53,7 @@ class RRTAgent:
         self.nodes = [self.root]
         self.kdtree = KDTree([[self.root.x, self.root.y]])
 
-    def solve(self, dist_threshold=40, rate=0.5):
+    def solve(self, dist_threshold=100, rate=0.5):
         # for experimenting purposes
         self.distance_threshold = dist_threshold
         self.rate = rate
@@ -101,6 +103,12 @@ class RRTAgent:
         # node and the randomly-chosen point, do nothing
         for obstacle in self.obstacles:
             if obstacle.clipline(node_position, self.point):
+                self.canceled_iterations += 1
+
+                # if the algorithm takes too long to run...
+                if self.canceled_iterations > self.max_canceled_iterations:
+                    self.goal_found = True
+                    self.path_cost = inf
                 return
 
         vector = (pygame.Vector2(self.point) - pygame.Vector2(node_position))

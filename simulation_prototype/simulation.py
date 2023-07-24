@@ -7,6 +7,8 @@ from JPS_agent import JPSAgent
 from draw import Draw
 from math import dist
 from utils import append_to_csv
+import cProfile
+from math import inf
 
 
 class Simulation:
@@ -70,30 +72,54 @@ class Simulation:
 
                 csv_name = self.file_name + ".csv"
 
-                headers = ['Trial No.', 'Distance Threshold', 'Rate', 'Path Cost', 'Iterations', 'Time Cost']
-                append_to_csv(csv_name, headers)
+                headers = ['Trial No.', 'Distance Threshold', 'Rate', 'Path Cost',
+                           'Iterations', 'Time Cost', 'Canceled Iterations']
+                # append_to_csv(csv_name, headers)
 
-                thresholds = [10, 50, 100]
-                rates = [0, 0.25, 0.5, 0.75]
+                thresholds = [100]
+                rates = [0, 0.25, 0.5]
 
-                trials = 30
+                trials = 100
 
-                for t in thresholds:
-                    for r in rates:
-                        print(f"Threshold: {t}, Rate: {r}")
-                        total_p = total_i = total_time = 0
+                # [threshold, rate, path_cost, iterations, time, canceled_iterations]
+
+                best_config_for_path_cost = [0, 0, inf, 0, 0, 0]
+                best_config_for_iterations = [0, 0, 0, inf, 0, 0]
+                best_config_for_time = [0, 0, 0, 0, inf, 0]
+
+                for threshold in thresholds:
+                    for rate in rates:
+                        print(f"Threshold: {threshold}, Rate: {rate}")
+                        total_p = total_i = total_time = total_c_i = 0
                         for trial_number in range(1, trials + 1):
-                            path_cost, iterations, time_cost = self.rrt_trial(trial_number, t, r, csv_name)
+                            path_cost, iterations, time_cost, canceled_iterations = \
+                                self.rrt_trial(trial_number, threshold, rate, csv_name)
                             total_p += path_cost
                             total_i += iterations
                             total_time += time_cost
+                            total_c_i += canceled_iterations
                         avg_p = total_p/trials
                         avg_i = total_i/trials
                         avg_t = total_time/trials
+                        avg_c_i = total_c_i/trials
 
-                        summarized_data = [self.file_name, t, r, avg_p, avg_i, avg_t]
-                        # append_to_csv("RRT Experimental Data/rrt_summary.csv", summarized_data)
-                        # disabled, it has served its purpose
+                        if avg_p < best_config_for_path_cost[2]:
+                            best_config_for_path_cost = [threshold, rate, avg_p, avg_i, avg_t, avg_c_i]
+                        if avg_i < best_config_for_iterations[3]:
+                            best_config_for_iterations = [threshold, rate, avg_p, avg_i, avg_t, avg_c_i]
+                        if avg_t < best_config_for_time[4]:
+                            best_config_for_time = [threshold, rate, avg_p, avg_i, avg_t, avg_c_i]
+
+                    # summarized_data = [self.file_name, t, r, avg_p, avg_i, avg_t]
+
+                configs = [best_config_for_path_cost,
+                           best_config_for_iterations,
+                           best_config_for_time]
+
+                for config in configs:
+                    summarized_data = [self.file_name, *config, trials]
+                    # append_to_csv("../experimentation/Final Report/RRT Experimental Data/rrt_summary.csv",
+                                  # summarized_data)
                 self.has_solution = True
                 print("Done.")
 
@@ -113,10 +139,11 @@ class Simulation:
         time_cost = final_time - initial_time  # in seconds
         path_cost = path_agent.path_cost
         iterations = path_agent.iterations
+        canceled_iterations = path_agent.canceled_iterations
 
-        data = [trial_number, distance_threshold, rate, path_cost, iterations, time_cost]
-        append_to_csv(file_name, data)
-        return path_cost, iterations, time_cost
+        data = [trial_number, distance_threshold, rate, path_cost, iterations, time_cost, canceled_iterations]
+        # csv(file_name, data)
+        return path_cost, iterations, time_cost, canceled_iterations
 
     def astar_experiment(self, event):
         """
@@ -174,10 +201,10 @@ class Simulation:
         # self.rrt_experiment(event)  # do not use this
         # self.astar_experiment(event)  # do not use this
 
-        # self.general_solve(event, self.rrt_agent, reverse=True)
+        self.general_solve(event, self.rrt_agent, reverse=True)
         # self.general_solve(event, self.astar_agent)
         # self.general_solve(event, self.diagonal_astar_agent)
-        self.general_solve(event, self.jps_agent)
+        # self.general_solve(event, self.jps_agent)
 
         # self.compare_astar(event)
 
@@ -223,8 +250,11 @@ class Simulation:
                 self.compare_print(self.diagonal_astar_agent)
                 self.compare_print(self.jps_agent)
                 self.compare_print(self.rrt_agent)
+                # def wrapper():
+                #     return self.jps_agent.solve()
+                # cProfile.runctx('wrapper()', globals(), locals())
 
-    def compare_print(self, solver_agent, diagonal=False):
+    def compare_print(self, solver_agent):
         print("Solving...")
         initial_time = time.time()
         self.solution_path = solver_agent.solve()
