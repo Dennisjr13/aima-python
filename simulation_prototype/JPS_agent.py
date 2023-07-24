@@ -45,7 +45,13 @@ class JPSAgent:
         while not self.open_list.empty():
 
             self.iteration_update()
-            current_node = self.load_next_node()
+            self.current_node = self.open_list.get()[1]
+            current_node = self.current_node
+
+            del self.open_dict[current_node]
+            self.closed_list.add(current_node)
+
+            self.explored_nodes += 1
 
             if current_node == self.goal_node:
                 return self.build_path(current_node)
@@ -142,17 +148,6 @@ class JPSAgent:
         if self.iterations > self.max_iterations:
             print("Too many iterations, unable to find solution")
             return None  # self.build_path(current_node)
-
-    def load_next_node(self):
-        self.current_node = self.open_list.get()[1]
-        current_node = self.current_node
-
-        del self.open_dict[current_node]
-        self.closed_list.add(current_node)
-
-        self.explored_nodes += 1
-
-        return self.current_node
 
     def is_valid(self, i, j):
         """Returns whether the cell is valid.
