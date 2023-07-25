@@ -29,7 +29,7 @@ class Draw:
     def draw_everything(self):
         self.screen.fill((211, 211, 211))  # color of free space
 
-        self.draw_inflated_obstacles()  # for debugging
+        # self.draw_inflated_obstacles()  # for debugging
 
         self.draw_agent()
         self.draw_obstacles()

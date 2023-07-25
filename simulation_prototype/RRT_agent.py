@@ -38,7 +38,6 @@ class RRTAgent:
         self.iterations = 0  # number of nodes in tree
         self.path_cost = 0  # cost of solution path
         self.canceled_iterations = 0  # number of canceled expansions
-        self.max_canceled_iterations = 1e6
 
         # accumulators for internal methods
         self.point = None
@@ -99,26 +98,23 @@ class RRTAgent:
             return
         node_position = (node.x, node.y)
 
-        # if there are obstacles between the closest
-        # node and the randomly-chosen point, do nothing
-        for obstacle in self.obstacles:
-            if obstacle.clipline(node_position, self.point):
-                self.canceled_iterations += 1
-
-                # if the algorithm takes too long to run...
-                if self.canceled_iterations > self.max_canceled_iterations:
-                    self.goal_found = True
-                    self.path_cost = inf
-                return
-
         vector = (pygame.Vector2(self.point) - pygame.Vector2(node_position))
         distance = vector.length()
 
         if distance > self.distance_threshold:
             vector.scale_to_length(self.distance_threshold)
+            self.point = self.point + vector
 
         new_x = node.x + vector.x
         new_y = node.y + vector.y
+
+        # if there are obstacles between the closest
+        # node and the randomly-chosen point (or a closer point), do nothing
+
+        for obstacle in self.obstacles:
+            if obstacle.clipline(node_position, (new_x, new_y)):
+                self.canceled_iterations += 1
+                return
 
         self.last_node_added = Node((new_x, new_y), node)
         self.iterations += 1

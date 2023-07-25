@@ -20,7 +20,7 @@ class Simulation:
 
         self.file_name = file_name
         self.screen_size = self.env.size
-        self.window_size = (2*self.screen_size[0], self.screen_size[1])
+        self.window_size = (self.screen_size[0], self.screen_size[1])
 
         self.agent = agent
 
@@ -74,12 +74,12 @@ class Simulation:
 
                 headers = ['Trial No.', 'Distance Threshold', 'Rate', 'Path Cost',
                            'Iterations', 'Time Cost', 'Canceled Iterations']
-                # append_to_csv(csv_name, headers)
+                append_to_csv(csv_name, headers)
 
-                thresholds = [100]
+                thresholds = [10, 50, 100, 200, inf]
                 rates = [0, 0.25, 0.5]
 
-                trials = 100
+                trials = 300
 
                 # [threshold, rate, path_cost, iterations, time, canceled_iterations]
 
@@ -110,7 +110,9 @@ class Simulation:
                         if avg_t < best_config_for_time[4]:
                             best_config_for_time = [threshold, rate, avg_p, avg_i, avg_t, avg_c_i]
 
-                    # summarized_data = [self.file_name, t, r, avg_p, avg_i, avg_t]
+                        averaged_data = [self.file_name, threshold, rate, avg_p, avg_i, avg_t, avg_c_i, trials]
+                        append_to_csv("../experimentation/Final Report/RRT Experimental Data/rrt_averages.csv",
+                                      averaged_data)
 
                 configs = [best_config_for_path_cost,
                            best_config_for_iterations,
@@ -118,8 +120,8 @@ class Simulation:
 
                 for config in configs:
                     summarized_data = [self.file_name, *config, trials]
-                    # append_to_csv("../experimentation/Final Report/RRT Experimental Data/rrt_summary.csv",
-                                  # summarized_data)
+                    append_to_csv("../experimentation/Final Report/RRT Experimental Data/rrt_best_models.csv",
+                                  summarized_data)
                 self.has_solution = True
                 print("Done.")
 
@@ -142,7 +144,7 @@ class Simulation:
         canceled_iterations = path_agent.canceled_iterations
 
         data = [trial_number, distance_threshold, rate, path_cost, iterations, time_cost, canceled_iterations]
-        # csv(file_name, data)
+        append_to_csv(file_name, data)
         return path_cost, iterations, time_cost, canceled_iterations
 
     def astar_experiment(self, event):
